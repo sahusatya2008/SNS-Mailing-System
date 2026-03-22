@@ -2,11 +2,11 @@
 
 ## Overview
 
-SNS Mail is a highly secure, professional web-based email platform built with Python and Flask. It features advanced security measures including biometric authentication, QR code scanning, virus detection, and comprehensive user management.
+SNS Mail is a highly secure, SNS AI based web-based email platform built with Python and Flask. It features advanced security measures including biometric authentication, QR code scanning, virus detection, and comprehensive user management. This is developed by Satya Narayan Sahu [CEO, Founder - SNSX, SAACH INDIA] and Tathoi Mondal [COO & Designer, Co-Founder - SNSX, SAACH INDIA]
 
 ## Features
 
-### 🔐 Security Features
+### Security Features
 - **Biometric Authentication**: Face photo and eye scan verification
 - **Two-Factor Authentication (2FA)**: Optional TOTP-based 2FA
 - **Virus Scanning**: Real-time file attachment scanning
@@ -14,7 +14,7 @@ SNS Mail is a highly secure, professional web-based email platform built with Py
 - **Account Locking**: Automatic account lockout after failed attempts
 - **Security Logging**: Comprehensive audit trail of all security events
 
-### 📧 Email Features
+### Email Features
 - **Secure Email System**: Full email composition, sending, and receiving
 - **Email Organization**: Inbox, sent, drafts, archive, deleted, and spam folders
 - **QR Code Integration**: Unique QR codes for each user to share email addresses securely
@@ -22,20 +22,20 @@ SNS Mail is a highly secure, professional web-based email platform built with Py
 - **Search Functionality**: Full-text search across emails
 - **Email Management**: Mark as important, archive, delete, and spam reporting
 
-### 👥 User Management
+### User Management
 - **Role-Based Access**: Client, Admin, and Server Admin roles
 - **User Registration**: Secure registration with biometric data
 - **Profile Management**: Complete user profile with biometric photos
 - **Account Security**: Password changes, 2FA setup, and security monitoring
 
-### 🛡️ Admin Features
+### Admin Features
 - **User Management**: View, ban, promote, and manage users
 - **Email Monitoring**: View and manage all emails in the system
 - **Security Monitoring**: View security logs and virus scan results
 - **System Statistics**: Comprehensive system monitoring and reporting
 - **Maintenance Tools**: System maintenance and optimization tools
 
-### 🖥️ Server Admin Features
+### Server Admin Features
 - **Advanced User Management**: Force logout, reset passwords, clear login attempts
 - **Email Management**: Resend, modify, and manage emails
 - **System Administration**: Server configuration and monitoring
@@ -478,4 +478,4 @@ For support and questions:
 
 ---
 
-**SNS Mail** - Secure, Professional, Next-Generation Email Platform
+**SNS Mail** - Secure, Young Developer Designed, Next-Generation Email Platform, Smart SNS AI
