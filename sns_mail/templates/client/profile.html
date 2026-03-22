@@ -1,0 +1,172 @@
+{% extends "base.html" %}
+
+{% block title %}Profile - SNS Mail{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h2 class="mb-4">
+            <i class="fas fa-user-circle text-primary"></i>
+            My Profile
+        </h2>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-4">
+        <div class="card text-center">
+            <div class="card-header">
+                <h5 class="mb-0">Profile Picture</h5>
+            </div>
+            <div class="card-body">
+                {% if user.face_photo %}
+                    <img src="{{ url_for('static', filename=user.face_photo) }}" 
+                         alt="Profile Photo" class="rounded-circle mb-3" 
+                         style="width: 150px; height: 150px; object-fit: cover;">
+                {% else %}
+                    <div class="bg-secondary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" 
+                         style="width: 150px; height: 150px;">
+                        <i class="fas fa-user fa-4x"></i>
+                    </div>
+                {% endif %}
+                
+                <form action="{{ url_for('client.update_avatar') }}" method="POST" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <input type="file" class="form-control" name="avatar" accept="image/*">
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-sm">
+                        <i class="fas fa-upload"></i> Update Photo
+                    </button>
+                </form>
+            </div>
+        </div>
+        
+        <div class="card mt-3">
+            <div class="card-header">
+                <h5 class="mb-0">Security Status</h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        Two-Factor Auth
+                        {% if user.is_2fa_enabled %}
+                            <span class="badge bg-success">Enabled</span>
+                        {% else %}
+                            <span class="badge bg-warning">Disabled</span>
+                        {% endif %}
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        Account Status
+                        <span class="badge bg-success">Active</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Profile Information</h5>
+                <a href="{{ url_for('client.edit_profile') }}" class="btn btn-primary btn-sm">
+                    <i class="fas fa-edit"></i> Edit
+                </a>
+            </div>
+            <div class="card-body">
+                <table class="table table-borderless">
+                    <tr>
+                        <th width="30%">Name</th>
+                        <td>
+                            <span class="verified-name">
+                                {{ user.name }}
+                                {% if user.is_verified %}
+                                    <span class="verified-badge" data-tooltip="Verified User">
+                                        <i class="fas fa-check"></i>
+                                    </span>
+                                {% endif %}
+                            </span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Username</th>
+                        <td>
+                            <span class="verified-name">
+                                {{ user.username }}
+                                {% if user.is_verified %}
+                                    <span class="verified-badge" data-tooltip="Verified User">
+                                        <i class="fas fa-check"></i>
+                                    </span>
+                                {% endif %}
+                            </span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Email</th>
+                        <td>{{ user.email }}</td>
+                    </tr>
+                    <tr>
+                        <th>Verification Status</th>
+                        <td>
+                            {% if user.is_verified %}
+                                <span class="badge bg-primary">
+                                    <i class="fas fa-check-circle"></i> Verified (Blue Tick)
+                                </span>
+                            {% else %}
+                                <span class="badge bg-secondary">Not Verified</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Member Since</th>
+                        <td>{{ user.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                    </tr>
+                    {% if user.last_login %}
+                    <tr>
+                        <th>Last Login</th>
+                        <td>{{ user.last_login.strftime('%Y-%m-%d %H:%M') }}</td>
+                    </tr>
+                    {% endif %}
+                    {% if user.is_admin or user.is_server_admin %}
+                    <tr>
+                        <th>Role</th>
+                        <td>
+                            {% if user.is_server_admin %}
+                                <span class="badge bg-danger">Server Admin</span>
+                            {% endif %}
+                            {% if user.is_admin %}
+                                <span class="badge bg-primary">Admin</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endif %}
+                </table>
+            </div>
+        </div>
+        
+        <div class="card mt-3">
+            <div class="card-header">
+                <h5 class="mb-0">Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 mb-2">
+                        <a href="{{ url_for('client.my_qr_code') }}" class="btn btn-outline-dark w-100">
+                            <i class="fas fa-qrcode"></i> My QR Code
+                        </a>
+                    </div>
+                    <div class="col-md-4 mb-2">
+                        <a href="{{ url_for('client.notes') }}" class="btn btn-outline-secondary w-100">
+                            <i class="fas fa-sticky-note"></i> My Notes
+                        </a>
+                    </div>
+                    <div class="col-md-4 mb-2">
+                        <a href="{{ url_for('auth.setup_2fa') }}" class="btn btn-outline-success w-100">
+                            <i class="fas fa-shield-alt"></i> Setup 2FA
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

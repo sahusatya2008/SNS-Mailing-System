@@ -1,0 +1,239 @@
+{% extends "base.html" %}
+
+{% block title %}QR Scanner - SNS Mail{% endblock %}
+
+{% block head %}
+<style>
+    #reader {
+        width: 100%;
+        max-width: 500px;
+        margin: 0 auto;
+    }
+    #reader video {
+        border-radius: 10px;
+    }
+    #reader__scan_region {
+        background: transparent !important;
+    }
+    #reader__dashboard {
+        display: none !important;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h2 class="mb-4">
+            <i class="fas fa-camera text-primary"></i>
+            QR Code Scanner
+        </h2>
+    </div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Scan a QR Code</h5>
+            </div>
+            <div class="card-body text-center">
+                <div id="reader"></div>
+                
+                <div id="scan-controls" class="mt-3">
+                    <button id="start-scan" class="btn btn-primary">
+                        <i class="fas fa-camera"></i> Start Scanner
+                    </button>
+                    <button id="stop-scan" class="btn btn-danger" style="display: none;">
+                        <i class="fas fa-stop"></i> Stop Scanner
+                    </button>
+                </div>
+                
+                <div id="scan-result" class="alert alert-success mt-3" style="display: none;">
+                    <h6><i class="fas fa-check-circle"></i> QR Code Detected!</h6>
+                    <p id="scanned-data" class="mb-2"></p>
+                    <a id="compose-link" href="#" class="btn btn-primary btn-sm">
+                        <i class="fas fa-envelope"></i> Send Email to This User
+                    </a>
+                </div>
+                
+                <div id="scan-error" class="alert alert-danger mt-3" style="display: none;">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span id="error-message"></span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card mt-3">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-info-circle"></i> How to Use</h5>
+            </div>
+            <div class="card-body">
+                <ol>
+                    <li>Click "Start Scanner" to begin scanning</li>
+                    <li>Allow camera access when prompted by your browser</li>
+                    <li>Point your camera at a user's QR code</li>
+                    <li>The scanner will automatically detect the email address</li>
+                    <li>Click "Send Email" to compose a message to that user</li>
+                </ol>
+                <div class="alert alert-info">
+                    <i class="fas fa-lightbulb"></i>
+                    <strong>Tip:</strong> Make sure you have good lighting and hold the QR code steady in front of the camera.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Or Enter Email Manually</h5>
+            </div>
+            <div class="card-body">
+                <form action="{{ url_for('client.compose') }}" method="GET">
+                    <div class="input-group">
+                        <input type="email" class="form-control" name="recipient" 
+                               placeholder="Enter recipient email (e.g., user@snsx.com)">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-envelope"></i> Compose
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const startBtn = document.getElementById('start-scan');
+    const stopBtn = document.getElementById('stop-scan');
+    const scanResult = document.getElementById('scan-result');
+    const scannedData = document.getElementById('scanned-data');
+    const composeLink = document.getElementById('compose-link');
+    const scanError = document.getElementById('scan-error');
+    const errorMessage = document.getElementById('error-message');
+    
+    let html5QrCode = null;
+    let isScanning = false;
+    
+    function showResult(data) {
+        scannedData.textContent = 'Detected: ' + data;
+        
+        // Check if it's an email address
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (emailRegex.test(data)) {
+            composeLink.href = '/compose?recipient=' + encodeURIComponent(data);
+            composeLink.style.display = 'inline-block';
+        } else {
+            composeLink.style.display = 'none';
+        }
+        
+        scanResult.style.display = 'block';
+        scanError.style.display = 'none';
+    }
+    
+    function showError(message) {
+        errorMessage.textContent = message;
+        scanError.style.display = 'block';
+        scanResult.style.display = 'none';
+    }
+    
+    function hideMessages() {
+        scanResult.style.display = 'none';
+        scanError.style.display = 'none';
+    }
+    
+    function onScanSuccess(decodedText, decodedResult) {
+        // Handle the scanned code
+        console.log('Scanned:', decodedText);
+        
+        // Check if it's an email address
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (emailRegex.test(decodedText)) {
+            // Stop scanning
+            if (html5QrCode && isScanning) {
+                html5QrCode.stop().then(() => {
+                    isScanning = false;
+                    // Redirect to compose page with email pre-filled
+                    window.location.href = '/compose?recipient=' + encodeURIComponent(decodedText);
+                }).catch((err) => {
+                    console.error('Error stopping scanner:', err);
+                    // Redirect anyway
+                    window.location.href = '/compose?recipient=' + encodeURIComponent(decodedText);
+                });
+            } else {
+                // Redirect to compose page with email pre-filled
+                window.location.href = '/compose?recipient=' + encodeURIComponent(decodedText);
+            }
+        } else {
+            // Not an email, show result but don't redirect
+            showResult(decodedText);
+        }
+    }
+    
+    function onScanFailure(error) {
+        // Ignore scan errors - they happen frequently while searching for QR codes
+    }
+    
+    startBtn.addEventListener('click', function() {
+        if (isScanning) return;
+        
+        hideMessages();
+        
+        html5QrCode = new Html5Qrcode("reader");
+        
+        const config = {
+            fps: 10,
+            qrbox: { width: 250, height: 250 },
+            aspectRatio: 1.0
+        };
+        
+        // Try camera first
+        html5QrCode.start(
+            { facingMode: "environment" },
+            config,
+            onScanSuccess,
+            onScanFailure
+        ).then(() => {
+            isScanning = true;
+            startBtn.style.display = 'none';
+            stopBtn.style.display = 'inline-block';
+        }).catch((err) => {
+            // Try with any camera if environment facing fails
+            html5QrCode.start(
+                { facingMode: "user" },
+                config,
+                onScanSuccess,
+                onScanFailure
+            ).then(() => {
+                isScanning = true;
+                startBtn.style.display = 'none';
+                stopBtn.style.display = 'inline-block';
+            }).catch((err2) => {
+                showError('Could not access camera. Please ensure camera permissions are granted and try using HTTPS.');
+                console.error('Camera error:', err2);
+            });
+        });
+    });
+    
+    stopBtn.addEventListener('click', function() {
+        if (!isScanning || !html5QrCode) return;
+        
+        html5QrCode.stop().then(() => {
+            isScanning = false;
+            startBtn.style.display = 'inline-block';
+            stopBtn.style.display = 'none';
+            hideMessages();
+        }).catch((err) => {
+            console.error('Error stopping scanner:', err);
+        });
+    });
+});
+</script>
+{% endblock %}

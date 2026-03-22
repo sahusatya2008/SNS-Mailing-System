@@ -1,0 +1,275 @@
+{% extends "base.html" %}
+
+{% block title %}Compose Email - SNS Mail{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="row mb-4">
+    <div class="col-12">
+        <h2>
+            <i class="fas fa-pen-alt"></i>
+            Compose New Email
+        </h2>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card fade-in">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-envelope-edit me-2"></i>
+                    New Message
+                </h5>
+            </div>
+            <div class="card-body p-4">
+                <form method="POST" enctype="multipart/form-data" id="composeForm">
+                    <div class="mb-4">
+                        <label for="recipient" class="form-label">
+                            <i class="fas fa-user me-2"></i>To (Recipient Email)
+                        </label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-at"></i></span>
+                            <input type="email" class="form-control form-control-lg" id="recipient" name="recipient" 
+                                   placeholder="recipient@snsx.com" value="{{ request.args.get('recipient', '') }}" required>
+                        </div>
+                        <div class="form-text">Only @snsx.com email addresses are valid recipients</div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="subject" class="form-label">
+                            <i class="fas fa-heading me-2"></i>Subject
+                        </label>
+                        <input type="text" class="form-control form-control-lg" id="subject" name="subject" 
+                               placeholder="Enter email subject" required>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="body" class="form-label">
+                            <i class="fas fa-align-left me-2"></i>Message
+                        </label>
+                        <textarea class="form-control" id="body" name="body" rows="12" 
+                                  placeholder="Write your message here..." required
+                                  style="resize: vertical; min-height: 200px;"></textarea>
+                        <div class="form-text">
+                            <span id="charCount">0</span> characters
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="attachment" class="form-label">
+                            <i class="fas fa-paperclip me-2"></i>Attachment (Optional)
+                        </label>
+                        <div class="file-upload-wrapper p-4 text-center" style="border: 2px dashed rgba(0, 240, 255, 0.3); border-radius: 12px; cursor: pointer;">
+                            <input type="file" class="file-upload-input d-none" id="attachment" name="attachment">
+                            <div class="file-preview">
+                                <i class="fas fa-cloud-upload-alt fa-2x text-primary mb-2"></i>
+                                <p class="text-secondary mb-1">Click or drag to upload attachment</p>
+                                <small class="text-muted">Allowed: txt, pdf, png, jpg, jpeg, gif, doc, docx, xls, xlsx (Max 16MB)</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="save_as_draft" name="save_as_draft">
+                            <label class="form-check-label" for="save_as_draft">
+                                <i class="fas fa-save me-1"></i> Save as Draft instead of sending
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <hr class="my-4">
+                    
+                    <div class="d-flex flex-wrap gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg" id="sendBtn">
+                            <i class="fas fa-paper-plane me-2"></i>
+                            Send Email
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary btn-lg" onclick="window.history.back()">
+                            <i class="fas fa-times me-2"></i>
+                            Cancel
+                        </button>
+                        <a href="{{ url_for('features.templates') }}" class="btn btn-outline-info btn-lg">
+                            <i class="fas fa-file-alt me-2"></i>
+                            Use Template
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <!-- Tips Card -->
+        <div class="card mb-4 fade-in">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-lightbulb me-2"></i>
+                    Tips
+                </h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled mb-0">
+                    <li class="mb-3 d-flex align-items-start">
+                        <i class="fas fa-shield-alt text-success me-3 mt-1"></i>
+                        <span>All emails are scanned for viruses automatically</span>
+                    </li>
+                    <li class="mb-3 d-flex align-items-start">
+                        <i class="fas fa-database text-info me-3 mt-1"></i>
+                        <span>Maximum attachment size: 16MB</span>
+                    </li>
+                    <li class="mb-3 d-flex align-items-start">
+                        <i class="fas fa-at text-warning me-3 mt-1"></i>
+                        <span>Only @snsx.com addresses are valid</span>
+                    </li>
+                    <li class="mb-0 d-flex align-items-start">
+                        <i class="fas fa-save text-secondary me-3 mt-1"></i>
+                        <span>Save as draft to continue later</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        
+        <!-- Security Info -->
+        <div class="card mb-4 fade-in">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-lock me-2"></i>
+                    Security
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="security-status success mb-3">
+                    <i class="fas fa-check-circle"></i>
+                    <div>
+                        <strong>Encrypted</strong>
+                        <p class="mb-0 small text-secondary">End-to-end encryption enabled</p>
+                    </div>
+                </div>
+                <div class="security-status success">
+                    <i class="fas fa-virus-slash"></i>
+                    <div>
+                        <strong>Protected</strong>
+                        <p class="mb-0 small text-secondary">Automatic virus scanning</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Quick Actions -->
+        <div class="card fade-in">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-bolt me-2"></i>
+                    Quick Actions
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('client.inbox') }}" class="btn btn-outline-primary">
+                        <i class="fas fa-inbox me-2"></i>Go to Inbox
+                    </a>
+                    <a href="{{ url_for('client.drafts') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-file-alt me-2"></i>View Drafts
+                    </a>
+                    <a href="{{ url_for('features.scheduled_emails') }}" class="btn btn-outline-info">
+                        <i class="fas fa-clock me-2"></i>Scheduled Emails
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Check for template data from sessionStorage
+document.addEventListener('DOMContentLoaded', function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('use_template') === 'true') {
+        const templateSubject = sessionStorage.getItem('templateSubject');
+        const templateBody = sessionStorage.getItem('templateBody');
+        
+        if (templateSubject) {
+            document.getElementById('subject').value = templateSubject;
+            sessionStorage.removeItem('templateSubject');
+        }
+        
+        if (templateBody) {
+            document.getElementById('body').value = templateBody;
+            sessionStorage.removeItem('templateBody');
+        }
+    }
+    
+    // Check for template_id from URL (from templates page)
+    const templateId = urlParams.get('template_id');
+    if (templateId) {
+        fetch('/features/templates/api/' + templateId)
+            .then(response => response.json())
+            .then(data => {
+                if (data.subject) {
+                    document.getElementById('subject').value = data.subject;
+                }
+                if (data.body) {
+                    document.getElementById('body').value = data.body;
+                }
+                // Update character count
+                charCount.textContent = document.getElementById('body').value.length.toLocaleString();
+            })
+            .catch(err => console.log('Could not load template:', err));
+    }
+});
+
+// Character counter
+const bodyTextarea = document.getElementById('body');
+const charCount = document.getElementById('charCount');
+
+bodyTextarea.addEventListener('input', function() {
+    charCount.textContent = this.value.length.toLocaleString();
+});
+
+// File upload trigger
+document.querySelector('.file-upload-wrapper').addEventListener('click', function() {
+    document.getElementById('attachment').click();
+});
+
+// File preview
+document.getElementById('attachment').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+        const preview = document.querySelector('.file-preview');
+        const fileSize = file.size / 1024 / 1024; // MB
+        
+        if (fileSize > 16) {
+            preview.innerHTML = `
+                <i class="fas fa-exclamation-triangle fa-2x text-danger mb-2"></i>
+                <p class="text-danger mb-1">File too large!</p>
+                <small class="text-muted">Maximum size is 16MB</small>
+            `;
+            this.value = '';
+            return;
+        }
+        
+        preview.innerHTML = `
+            <i class="fas fa-file fa-2x text-success mb-2"></i>
+            <p class="text-success mb-1">${file.name}</p>
+            <small class="text-muted">${fileSize.toFixed(2)} MB</small>
+        `;
+    }
+});
+
+// Form submission with loading state
+document.getElementById('composeForm').addEventListener('submit', function(e) {
+    const sendBtn = document.getElementById('sendBtn');
+    const isDraft = document.getElementById('save_as_draft').checked;
+    
+    sendBtn.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span>${isDraft ? 'Saving...' : 'Sending...'}`;
+    sendBtn.disabled = true;
+});
+
+// Auto-focus recipient field
+document.getElementById('recipient').focus();
+</script>
+{% endblock %}

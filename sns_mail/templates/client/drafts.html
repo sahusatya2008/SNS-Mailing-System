@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block title %}Drafts - SNS Mail{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h2 class="mb-4">
+            <i class="fas fa-file-alt text-warning"></i>
+            Drafts
+        </h2>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span>Draft Messages</span>
+                <a href="{{ url_for('client.compose') }}" class="btn btn-primary btn-sm">
+                    <i class="fas fa-plus"></i> Compose
+                </a>
+            </div>
+            <div class="card-body">
+                {% if drafts %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th width="25%">To</th>
+                                    <th width="35%">Subject</th>
+                                    <th width="20%">Last Updated</th>
+                                    <th width="20%">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for draft in drafts %}
+                                <tr>
+                                    <td>{{ draft.recipient_email or 'Not specified' }}</td>
+                                    <td>{{ draft.subject }}</td>
+                                    <td>{{ draft.updated_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <a href="{{ url_for('client.edit_draft', draft_id=draft.id) }}" 
+                                               class="btn btn-outline-primary" title="Edit">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <form action="{{ url_for('client.delete_draft', draft_id=draft.id) }}" 
+                                                  method="POST" style="display: inline;">
+                                                <button type="submit" class="btn btn-outline-danger" title="Delete"
+                                                        onclick="return confirm('Are you sure you want to delete this draft?')">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-file-alt fa-4x text-muted mb-3"></i>
+                        <h5>No drafts</h5>
+                        <p class="text-muted">You don't have any saved drafts.</p>
+                        <a href="{{ url_for('client.compose') }}" class="btn btn-primary">
+                            <i class="fas fa-pen-alt"></i> Compose Email
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

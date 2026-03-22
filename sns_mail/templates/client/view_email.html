@@ -1,0 +1,440 @@
+{% extends "base.html" %}
+
+{% block title %}{{ email.subject }} - SNS Mail{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>
+                <i class="fas fa-envelope text-primary icon-animated"></i>
+                {{ email.subject }}
+            </h2>
+            <div>
+                <a href="{{ url_for('client.reply_email', email_id=email.id) }}" class="btn btn-primary">
+                    <i class="fas fa-reply"></i> Reply
+                </a>
+                <a href="{{ url_for('client.forward_email', email_id=email.id) }}" class="btn btn-secondary">
+                    <i class="fas fa-share"></i> Forward
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Main Email Content -->
+    <div class="col-lg-8">
+        <div class="card fade-in">
+            <div class="card-header">
+                <div class="row">
+                    <div class="col-md-6">
+                        <strong>From:</strong> 
+                        <span class="verified-name">
+                            {{ email.sender.name }}
+                            {% if email.sender.is_verified %}
+                                <span class="verified-badge verified-badge-sm" data-tooltip="Verified User">
+                                    <i class="fas fa-check"></i>
+                                </span>
+                            {% endif %}
+                        </span>
+                        <small class="text-muted">({{ email.sender.email }})</small>
+                    </div>
+                    <div class="col-md-6 text-md-end">
+                        <strong>Date:</strong> {{ email.sent_at.strftime('%Y-%m-%d %H:%M') }}
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <strong>To:</strong> 
+                    <span class="verified-name">
+                        {{ email.recipient.name }}
+                        {% if email.recipient.is_verified %}
+                            <span class="verified-badge verified-badge-sm" data-tooltip="Verified User">
+                                <i class="fas fa-check"></i>
+                            </span>
+                        {% endif %}
+                    </span>
+                    <small class="text-muted">({{ email.recipient.email }})</small>
+                </div>
+                {% if email.attachment_filename %}
+                <div class="mb-3">
+                    <i class="fas fa-paperclip text-primary"></i>
+                    <a href="{{ url_for('client.download_attachment', email_id=email.id) }}">
+                        {{ email.attachment_filename }}
+                    </a>
+                </div>
+                {% endif %}
+                <hr>
+                <div class="email-body">
+                    {{ email.body | replace('\n', '<br>') | safe }}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Context Memory Section -->
+        <div class="card mt-4 fade-in" id="contextMemoryCard" style="display: none;">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="fas fa-brain text-info icon-pulse me-2"></i>
+                    Context Memory - Related Discussions
+                </h5>
+                <span class="badge bg-info" id="contextCount">0 found</span>
+            </div>
+            <div class="card-body" id="contextMemoryContent">
+                <!-- Loading state -->
+                <div id="contextLoading" class="text-center py-4">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Analyzing context...</span>
+                    </div>
+                    <p class="mt-2 text-muted">Analyzing conversation history...</p>
+                </div>
+                
+                <!-- No context state -->
+                <div id="noContextMessage" class="text-center py-4" style="display: none;">
+                    <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                    <p class="text-muted">No related prior discussions detected</p>
+                    <small class="text-muted">This email appears to be a new conversation thread</small>
+                </div>
+                
+                <!-- Context results -->
+                <div id="contextResults" style="display: none;"></div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Sidebar -->
+    <div class="col-lg-4">
+        <!-- Actions Card -->
+        <div class="card fade-in">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-cog icon-animated me-2"></i>Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <form action="{{ url_for('client.archive_email', email_id=email.id) }}" method="POST">
+                        <button type="submit" class="btn btn-outline-primary w-100">
+                            <i class="fas fa-archive"></i> Archive
+                        </button>
+                    </form>
+                    <form action="{{ url_for('client.mark_important', email_id=email.id) }}" method="POST">
+                        <button type="submit" class="btn btn-outline-warning w-100">
+                            <i class="fas fa-star"></i> Mark Important
+                        </button>
+                    </form>
+                    <form action="{{ url_for('client.mark_spam', email_id=email.id) }}" method="POST">
+                        <button type="submit" class="btn btn-outline-danger w-100">
+                            <i class="fas fa-exclamation-triangle"></i> Mark as Spam
+                        </button>
+                    </form>
+                    <form action="{{ url_for('client.delete_email', email_id=email.id) }}" method="POST">
+                        <button type="submit" class="btn btn-outline-dark w-100">
+                            <i class="fas fa-trash"></i> Delete
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Context Memory Stats Card -->
+        <div class="card mt-3 fade-in" id="contextStatsCard">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-link icon-animated me-2"></i>Thread Context</h5>
+            </div>
+            <div class="card-body" id="contextStatsContent">
+                <div class="text-center py-3">
+                    <i class="fas fa-spinner fa-spin fa-2x text-primary"></i>
+                    <p class="mt-2 text-muted small">Loading context stats...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Context Detail Modal -->
+<div class="modal fade" id="contextDetailModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-history text-info me-2"></i>
+                    <span id="modalTitle">Related Discussion</span>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <!-- Dynamic content -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <a href="#" id="viewFullEmailBtn" class="btn btn-primary">
+                    <i class="fas fa-external-link-alt me-1"></i> View Full Email
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Context Memory functionality
+(function() {
+    const emailId = {{ email.id }};
+    
+    // Load context on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        loadContextMemory();
+        loadContextStats();
+    });
+    
+    function loadContextMemory() {
+        const card = document.getElementById('contextMemoryCard');
+        const loading = document.getElementById('contextLoading');
+        const noContext = document.getElementById('noContextMessage');
+        const results = document.getElementById('contextResults');
+        const countBadge = document.getElementById('contextCount');
+        
+        fetch(`/api/email/${emailId}/context`)
+            .then(response => response.json())
+            .then(data => {
+                loading.style.display = 'none';
+                
+                if (data.has_context && data.contexts.length > 0) {
+                    card.style.display = 'block';
+                    results.style.display = 'block';
+                    countBadge.textContent = data.total_found + ' found';
+                    
+                    renderContextResults(data.contexts);
+                } else {
+                    card.style.display = 'block';
+                    noContext.style.display = 'block';
+                    countBadge.textContent = '0 found';
+                }
+            })
+            .catch(error => {
+                console.error('Error loading context:', error);
+                loading.innerHTML = '<p class="text-danger">Error loading context</p>';
+            });
+    }
+    
+    function renderContextResults(contexts) {
+        const container = document.getElementById('contextResults');
+        
+        let html = '<div class="context-list">';
+        
+        contexts.forEach((ctx, index) => {
+            const confidenceClass = getConfidenceClass(ctx.confidence_level);
+            const confidenceLabel = ctx.confidence_level.charAt(0).toUpperCase() + ctx.confidence_level.slice(1);
+            
+            html += `
+                <div class="context-item card mb-3" data-memory-id="${ctx.memory_id}">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h6 class="mb-0">
+                                <i class="fas fa-envelope text-primary me-2"></i>
+                                ${escapeHtml(ctx.subject)}
+                            </h6>
+                            <span class="badge ${confidenceClass}">${confidenceLabel} Confidence</span>
+                        </div>
+                        
+                        <div class="context-meta mb-2">
+                            <small class="text-muted me-3">
+                                <i class="fas fa-user me-1"></i> ${escapeHtml(ctx.sender)}
+                            </small>
+                            <small class="text-muted">
+                                <i class="fas fa-clock me-1"></i> ${ctx.date}
+                            </small>
+                        </div>
+                        
+                        <p class="context-preview text-muted small mb-2">
+                            ${escapeHtml(ctx.preview)}
+                        </p>
+                        
+                        ${ctx.detected_phrases && ctx.detected_phrases.length > 0 ? `
+                            <div class="detected-phrases mb-2">
+                                <small class="text-info">
+                                    <i class="fas fa-quote-left me-1"></i>
+                                    Detected: "${ctx.detected_phrases.map(p => escapeHtml(p.phrase)).join('", "')}"
+                                </small>
+                            </div>
+                        ` : ''}
+                        
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="btn-group btn-group-sm">
+                                <button class="btn btn-outline-primary" onclick="viewContextDetail(${ctx.memory_id}, ${ctx.email_id})">
+                                    <i class="fas fa-eye"></i> View Details
+                                </button>
+                                <a href="/view_email/${ctx.email_id}" class="btn btn-outline-info">
+                                    <i class="fas fa-external-link-alt"></i> Open
+                                </a>
+                            </div>
+                            
+                            <div class="feedback-buttons">
+                                ${ctx.user_feedback ? `
+                                    <span class="badge ${ctx.user_feedback === 'relevant' ? 'bg-success' : 'bg-secondary'}">
+                                        <i class="fas fa-${ctx.user_feedback === 'relevant' ? 'check' : 'times'}"></i>
+                                        ${ctx.user_feedback}
+                                    </span>
+                                ` : `
+                                    <button class="btn btn-sm btn-outline-success me-1" onclick="submitFeedback(${ctx.memory_id}, 'relevant')" title="This is relevant">
+                                        <i class="fas fa-thumbs-up"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-secondary" onclick="submitFeedback(${ctx.memory_id}, 'not_relevant')" title="Not relevant">
+                                        <i class="fas fa-thumbs-down"></i>
+                                    </button>
+                                `}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+        
+        html += '</div>';
+        container.innerHTML = html;
+    }
+    
+    function getConfidenceClass(level) {
+        switch(level) {
+            case 'high': return 'bg-success';
+            case 'medium': return 'bg-warning text-dark';
+            case 'low': return 'bg-secondary';
+            default: return 'bg-secondary';
+        }
+    }
+    
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+    
+    window.viewContextDetail = function(memoryId, emailId) {
+        const modal = new bootstrap.Modal(document.getElementById('contextDetailModal'));
+        const modalBody = document.getElementById('modalBody');
+        const viewBtn = document.getElementById('viewFullEmailBtn');
+        
+        modalBody.innerHTML = '<div class="text-center py-4"><div class="spinner-border text-primary"></div></div>';
+        modal.show();
+        
+        fetch(`/api/context/${memoryId}/summary`)
+            .then(response => response.json())
+            .then(data => {
+                viewBtn.href = `/view_email/${emailId}`;
+                
+                let html = `
+                    <div class="context-detail">
+                        <div class="mb-3">
+                            <h6><i class="fas fa-heading text-primary me-2"></i>Subject</h6>
+                            <p>${escapeHtml(data.subject)}</p>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <h6><i class="fas fa-percentage text-info me-2"></i>Confidence Score</h6>
+                            <div class="progress" style="height: 10px;">
+                                <div class="progress-bar ${getConfidenceClass(data.confidence_level)}" 
+                                     style="width: ${Math.round(data.confidence * 100)}%">
+                                </div>
+                            </div>
+                            <small class="text-muted">${Math.round(data.confidence * 100)}% - ${data.confidence_level} confidence</small>
+                        </div>
+                        
+                        ${data.summary_text ? `
+                            <div class="mb-3">
+                                <h6><i class="fas fa-file-alt text-success me-2"></i>Summary</h6>
+                                <pre class="bg-dark p-3 rounded" style="white-space: pre-wrap; font-size: 0.85rem;">${escapeHtml(data.summary_text)}</pre>
+                            </div>
+                        ` : ''}
+                        
+                        ${data.key_decisions ? `
+                            <div class="mb-3">
+                                <h6><i class="fas fa-gavel text-warning me-2"></i>Key Decisions</h6>
+                                <div class="bg-dark p-3 rounded">${data.key_decisions}</div>
+                            </div>
+                        ` : ''}
+                        
+                        ${data.pending_tasks ? `
+                            <div class="mb-3">
+                                <h6><i class="fas fa-tasks text-danger me-2"></i>Pending Tasks</h6>
+                                <div class="bg-dark p-3 rounded">${data.pending_tasks}</div>
+                            </div>
+                        ` : ''}
+                        
+                        ${data.last_status ? `
+                            <div class="mb-3">
+                                <h6><i class="fas fa-info-circle text-info me-2"></i>Last Status</h6>
+                                <p class="text-muted">${escapeHtml(data.last_status)}</p>
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+                
+                modalBody.innerHTML = html;
+            })
+            .catch(error => {
+                console.error('Error loading context detail:', error);
+                modalBody.innerHTML = '<p class="text-danger">Error loading details</p>';
+            });
+    };
+    
+    window.submitFeedback = function(memoryId, feedback) {
+        fetch(`/api/context/${memoryId}/feedback`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ feedback: feedback })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Reload context to show updated feedback
+                loadContextMemory();
+                if (window.SNSMail && window.SNSMail.showToast) {
+                    window.SNSMail.showToast('Feedback recorded successfully', 'success');
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Error submitting feedback:', error);
+        });
+    };
+    
+    function loadContextStats() {
+        const container = document.getElementById('contextStatsContent');
+        
+        fetch('/api/context-stats')
+            .then(response => response.json())
+            .then(data => {
+                let html = `
+                    <div class="row text-center">
+                        <div class="col-6 mb-3">
+                            <h4 class="text-primary">${data.total_contexts}</h4>
+                            <small class="text-muted">Total Links</small>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <h4 class="text-success">${data.high_confidence}</h4>
+                            <small class="text-muted">High Confidence</small>
+                        </div>
+                        <div class="col-6">
+                            <h4 class="text-warning">${data.medium_confidence}</h4>
+                            <small class="text-muted">Medium</small>
+                        </div>
+                        <div class="col-6">
+                            <h4 class="text-info">${data.feedback_given}</h4>
+                            <small class="text-muted">Feedback Given</small>
+                        </div>
+                    </div>
+                `;
+                container.innerHTML = html;
+            })
+            .catch(error => {
+                console.error('Error loading stats:', error);
+                container.innerHTML = '<p class="text-muted text-center">Unable to load stats</p>';
+            });
+    }
+})();
+</script>
+{% endblock %}

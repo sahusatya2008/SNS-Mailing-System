@@ -1,0 +1,849 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - SNS Mail{% endblock %}
+
+{% block content %}
+<!-- Welcome Header -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="parallax-section" style="min-height: auto; padding: 2rem 0;">
+            <h2 class="mb-0">
+                <i class="fas fa-tachometer-alt"></i>
+                Welcome back, 
+                <span class="verified-name">
+                    {{ current_user.name }}
+                    {% if current_user.is_verified %}
+                        <span class="verified-badge verified-badge-lg" data-tooltip="Verified User">
+                            <i class="fas fa-check"></i>
+                        </span>
+                    {% endif %}
+                </span>!
+            </h2>
+        </div>
+    </div>
+</div>
+
+<!-- Statistics Cards -->
+<div class="row mb-4">
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card bg-primary text-white h-100 fade-in">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title">Total Emails</h6>
+                        <h3 class="mb-0" data-counter="{{ total_emails }}">{{ total_emails }}</h3>
+                    </div>
+                    <div class="text-end">
+                        <i class="fas fa-envelope fa-2x"></i>
+                    </div>
+                </div>
+                <div class="progress mt-3" style="height: 4px;">
+                    <div class="progress-bar bg-white" style="width: 75%"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card bg-warning text-white h-100 fade-in">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title">Unread</h6>
+                        <h3 class="mb-0" data-counter="{{ unread_emails }}">{{ unread_emails }}</h3>
+                    </div>
+                    <div class="text-end">
+                        <i class="fas fa-envelope-open fa-2x"></i>
+                    </div>
+                </div>
+                <div class="progress mt-3" style="height: 4px;">
+                    <div class="progress-bar bg-white" style="width: {{ (unread_emails / total_emails * 100) if total_emails > 0 else 0 }}%"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card bg-danger text-white h-100 fade-in">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title">Important</h6>
+                        <h3 class="mb-0" data-counter="{{ important_emails }}">{{ important_emails }}</h3>
+                    </div>
+                    <div class="text-end">
+                        <i class="fas fa-exclamation-circle fa-2x"></i>
+                    </div>
+                </div>
+                <div class="progress mt-3" style="height: 4px;">
+                    <div class="progress-bar bg-white" style="width: {{ (important_emails / total_emails * 100) if total_emails > 0 else 0 }}%"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card bg-info text-white h-100 fade-in">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title">Sent</h6>
+                        <h3 class="mb-0" data-counter="{{ sent_emails }}">{{ sent_emails }}</h3>
+                    </div>
+                    <div class="text-end">
+                        <i class="fas fa-paper-plane fa-2x"></i>
+                    </div>
+                </div>
+                <div class="progress mt-3" style="height: 4px;">
+                    <div class="progress-bar bg-white" style="width: 60%"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Recent Emails -->
+    <div class="col-lg-6 mb-4">
+        <div class="card h-100 fade-in">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="fas fa-inbox me-2"></i>
+                    Recent Inbox
+                </h5>
+                <a href="{{ url_for('client.inbox') }}" class="btn btn-sm btn-outline-primary">View All</a>
+            </div>
+            <div class="card-body p-0">
+                {% if recent_emails %}
+                    <div class="list-group list-group-flush">
+                        {% for email in recent_emails %}
+                            <a href="{{ url_for('client.view_email', email_id=email.id) }}" class="list-group-item list-group-item-action">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div class="me-3">
+                                        <div class="fw-bold {% if not email.is_read %}text-primary{% endif %}">
+                                            {% if not email.is_read %}<i class="fas fa-circle text-primary me-2" style="font-size: 8px;"></i>{% endif %}
+                                            {{ email.subject[:50] }}{% if email.subject|length > 50 %}...{% endif %}
+                                        </div>
+                                        <small class="text-secondary">From: {{ email.sender.email }}</small>
+                                    </div>
+                                    <div class="text-end">
+                                        <small class="text-muted d-block">{{ email.sent_at.strftime('%H:%M') }}</small>
+                                        <small class="text-muted d-block">{{ email.sent_at.strftime('%d %b') }}</small>
+                                    </div>
+                                </div>
+                                {% if email.is_important %}
+                                    <span class="badge bg-danger mt-2"><i class="fas fa-star me-1"></i>Important</span>
+                                {% endif %}
+                            </a>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="empty-state p-4">
+                        <i class="fas fa-inbox"></i>
+                        <p>No recent emails</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Recent Sent -->
+    <div class="col-lg-6 mb-4">
+        <div class="card h-100 fade-in">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="fas fa-paper-plane me-2"></i>
+                    Recent Sent
+                </h5>
+                <a href="{{ url_for('client.sent') }}" class="btn btn-sm btn-outline-primary">View All</a>
+            </div>
+            <div class="card-body p-0">
+                {% if recent_sent %}
+                    <div class="list-group list-group-flush">
+                        {% for email in recent_sent %}
+                            <a href="{{ url_for('client.view_email', email_id=email.id) }}" class="list-group-item list-group-item-action">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div class="me-3">
+                                        <div class="fw-bold">
+                                            {{ email.subject[:50] }}{% if email.subject|length > 50 %}...{% endif %}
+                                        </div>
+                                        <small class="text-secondary">To: {{ email.recipient.email }}</small>
+                                    </div>
+                                    <div class="text-end">
+                                        <small class="text-muted d-block">{{ email.sent_at.strftime('%H:%M') }}</small>
+                                        <small class="text-muted d-block">{{ email.sent_at.strftime('%d %b') }}</small>
+                                    </div>
+                                </div>
+                                {% if email.attachment_filename %}
+                                    <span class="badge bg-secondary mt-2"><i class="fas fa-paperclip me-1"></i>Attachment</span>
+                                {% endif %}
+                            </a>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="empty-state p-4">
+                        <i class="fas fa-paper-plane"></i>
+                        <p>No sent emails</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card fade-in">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-bolt me-2"></i>
+                    Quick Actions
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-lg-2 col-md-4 col-6">
+                        <a href="{{ url_for('client.compose') }}" class="quick-action-btn">
+                            <i class="fas fa-plus-circle"></i>
+                            <small>Compose</small>
+                        </a>
+                    </div>
+                    <div class="col-lg-2 col-md-4 col-6">
+                        <a href="{{ url_for('client.inbox') }}" class="quick-action-btn">
+                            <i class="fas fa-inbox"></i>
+                            <small>Inbox</small>
+                        </a>
+                    </div>
+                    <div class="col-lg-2 col-md-4 col-6">
+                        <a href="{{ url_for('client.sent') }}" class="quick-action-btn">
+                            <i class="fas fa-paper-plane"></i>
+                            <small>Sent</small>
+                        </a>
+                    </div>
+                    <div class="col-lg-2 col-md-4 col-6">
+                        <a href="{{ url_for('client.drafts') }}" class="quick-action-btn">
+                            <i class="fas fa-file-alt"></i>
+                            <small>Drafts</small>
+                        </a>
+                    </div>
+                    <div class="col-lg-2 col-md-4 col-6">
+                        <a href="{{ url_for('client.notes') }}" class="quick-action-btn">
+                            <i class="fas fa-sticky-note"></i>
+                            <small>Notes</small>
+                        </a>
+                    </div>
+                    <div class="col-lg-2 col-md-4 col-6">
+                        <a href="{{ url_for('client.my_qr_code') }}" class="quick-action-btn">
+                            <i class="fas fa-qrcode"></i>
+                            <small>QR Code</small>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Context Memory - Enhanced Section -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card fade-in border-info">
+            <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="fas fa-brain icon-pulse me-2"></i>
+                    Context Memory - Intelligent Thread Analysis
+                </h5>
+                <div>
+                    <span class="badge bg-light text-dark me-2">{{ context_stats.total_memories }} links</span>
+                    <button class="btn btn-sm btn-light" type="button" data-bs-toggle="collapse" data-bs-target="#contextDetails">
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <!-- Quick Stats Row -->
+                <div class="row text-center mb-4">
+                    <div class="col-md-2 col-4 mb-3">
+                        <div class="p-2 bg-light rounded">
+                            <h4 class="text-primary mb-0">{{ context_stats.total_memories }}</h4>
+                            <small class="text-muted">Total Links</small>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-4 mb-3">
+                        <div class="p-2 bg-light rounded">
+                            <h4 class="text-success mb-0">{{ context_stats.high_confidence }}</h4>
+                            <small class="text-muted">High Confidence</small>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-4 mb-3">
+                        <div class="p-2 bg-light rounded">
+                            <h4 class="text-warning mb-0">{{ context_stats.medium_confidence }}</h4>
+                            <small class="text-muted">Medium</small>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-4 mb-3">
+                        <div class="p-2 bg-light rounded">
+                            <h4 class="text-secondary mb-0">{{ context_stats.low_confidence }}</h4>
+                            <small class="text-muted">Low</small>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-4 mb-3">
+                        <div class="p-2 bg-light rounded">
+                            <h4 class="text-info mb-0">{{ context_stats.total_phrases }}</h4>
+                            <small class="text-muted">Phrases</small>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-4 mb-3">
+                        <div class="p-2 bg-light rounded">
+                            <h4 class="text-danger mb-0">{{ context_stats.active_threads }}</h4>
+                            <small class="text-muted">Active Threads</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Collapsible Details -->
+                <div class="collapse show" id="contextDetails">
+                    <!-- Recent Context Links -->
+                    <div class="mb-4">
+                        <h6 class="text-muted mb-3"><i class="fas fa-link me-2"></i>Recent Thread Links</h6>
+                        <div class="table-responsive" style="max-height: 200px; overflow-y: auto;">
+                            <table class="table table-sm table-hover">
+                                <thead class="table-light sticky-top">
+                                    <tr>
+                                        <th>Email Subject</th>
+                                        <th>Related To</th>
+                                        <th>Confidence</th>
+                                        <th>Created</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for ctx in recent_contexts %}
+                                    <tr>
+                                        <td>
+                                            {% if ctx.current_email %}
+                                                <a href="{{ url_for('client.view_email', email_id=ctx.current_email_id) }}" class="text-decoration-none">
+                                                    {{ ctx.current_email.subject[:30] }}{% if ctx.current_email.subject|length > 30 %}...{% endif %}
+                                                </a>
+                                            {% else %}
+                                                <span class="text-muted">Email #{{ ctx.current_email_id }}</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if ctx.related_email %}
+                                                <a href="{{ url_for('client.view_email', email_id=ctx.related_email_id) }}" class="text-decoration-none">
+                                                    {{ ctx.related_email.subject[:30] }}{% if ctx.related_email.subject|length > 30 %}...{% endif %}
+                                                </a>
+                                            {% else %}
+                                                <span class="text-muted">Email #{{ ctx.related_email_id }}</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-{% if ctx.confidence_level == 'high' %}success{% elif ctx.confidence_level == 'medium' %}warning{% else %}secondary{% endif %}">
+                                                {{ (ctx.overall_confidence * 100)|round(0)|int }}%
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <small class="text-muted">{{ ctx.created_at.strftime('%d %b %H:%M') if ctx.created_at else '-' }}</small>
+                                        </td>
+                                    </tr>
+                                    {% else %}
+                                    <tr>
+                                        <td colspan="4" class="text-center text-muted py-3">
+                                            <i class="fas fa-link fa-2x mb-2 d-block"></i>
+                                            No context links found. Click "Analyze All" to detect related threads.
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <!-- Detection Methods -->
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="text-muted mb-2"><i class="fas fa-cogs me-2"></i>Detection Methods</h6>
+                            <ul class="list-group list-group-flush small">
+                                <li class="list-group-item d-flex justify-content-between">
+                                    <span><i class="fas fa-quote-left text-primary me-2"></i>Phrase Detection</span>
+                                    <span class="badge bg-primary">{{ context_stats.total_phrases }}</span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between">
+                                    <span><i class="fas fa-users text-success me-2"></i>Participant Matching</span>
+                                    <span class="badge bg-success">Active</span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between">
+                                    <span><i class="fas fa-project-diagram text-warning me-2"></i>Subject Alignment</span>
+                                    <span class="badge bg-warning">Active</span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between">
+                                    <span><i class="fas fa-clock text-info me-2"></i>Recency Weighting</span>
+                                    <span class="badge bg-info">Active</span>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-muted mb-2"><i class="fas fa-chart-pie me-2"></i>Confidence Distribution</h6>
+                            {% if context_stats.total_memories > 0 %}
+                            {% set high_pct = (context_stats.high_confidence / context_stats.total_memories * 100)|round(0) %}
+                            {% set med_pct = (context_stats.medium_confidence / context_stats.total_memories * 100)|round(0) %}
+                            {% set low_pct = (context_stats.low_confidence / context_stats.total_memories * 100)|round(0) %}
+                            <div class="progress mb-2" style="height: 20px;">
+                                <div class="progress-bar bg-success" style="width: {{ high_pct }}%">{% if high_pct > 10 %}{{ high_pct|int }}%{% endif %}</div>
+                                <div class="progress-bar bg-warning" style="width: {{ med_pct }}%">{% if med_pct > 10 %}{{ med_pct|int }}%{% endif %}</div>
+                                <div class="progress-bar bg-secondary" style="width: {{ low_pct }}%">{% if low_pct > 10 %}{{ low_pct|int }}%{% endif %}</div>
+                            </div>
+                            {% else %}
+                            <div class="progress mb-2" style="height: 20px;">
+                                <div class="progress-bar bg-secondary" style="width: 100%">No data</div>
+                            </div>
+                            {% endif %}
+                            <div class="d-flex justify-content-between small text-muted">
+                                <span><i class="fas fa-circle text-success me-1"></i>High (75%+)</span>
+                                <span><i class="fas fa-circle text-warning me-1"></i>Medium (50-74%)</span>
+                                <span><i class="fas fa-circle text-secondary me-1"></i>Low (25-49%)</span>
+                            </div>
+                            
+                            <div class="mt-3">
+                                <form action="{{ url_for('admin.analyze_emails_context') }}" method="POST">
+                                    <button type="submit" class="btn btn-outline-info btn-sm w-100 mb-2">
+                                        <i class="fas fa-sync-alt me-1"></i>Analyze All Emails
+                                    </button>
+                                </form>
+                                {% if current_user.is_admin or current_user.is_server_admin %}
+                                <a href="{{ url_for('admin.context_memory') }}" class="btn btn-outline-primary btn-sm w-100">
+                                    <i class="fas fa-cog me-1"></i>Manage Context Memory
+                                </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="text-muted small mt-3 border-top pt-2">
+                    <i class="fas fa-info-circle me-1"></i>
+                    Context Memory automatically links related email conversations using AI-powered phrase detection, participant matching, and subject alignment.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Security Status & Profile -->
+<div class="row">
+    <div class="col-lg-6 mb-4">
+        <div class="card h-100 fade-in">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-shield-alt me-2"></i>
+                    Security Status
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="security-status success">
+                            <i class="fas fa-user-shield"></i>
+                            <div>
+                                <strong>Account Status</strong>
+                                <p class="mb-0 small text-secondary">Secure & Protected</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="security-status {% if current_user.is_2fa_enabled %}success{% else %}warning{% endif %}">
+                            <i class="fas fa-mobile-alt"></i>
+                            <div>
+                                <strong>2FA Status</strong>
+                                <p class="mb-0 small text-secondary">
+                                    {% if current_user.is_2fa_enabled %}
+                                        Enabled
+                                    {% else %}
+                                        Disabled
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                {% if not current_user.is_2fa_enabled %}
+                    <div class="alert alert-warning mt-3 mb-0">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>Enhance Your Security:</strong> Enable Two-Factor Authentication for additional protection.
+                        <a href="{{ url_for('auth.setup_2fa') }}" class="btn btn-sm btn-warning ms-2">Set up 2FA</a>
+                    </div>
+                {% else %}
+                    <div class="alert alert-success mt-3 mb-0">
+                        <i class="fas fa-check-circle me-2"></i>
+                        <strong>All Good!</strong> Your account is fully protected with Two-Factor Authentication.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-6 mb-4">
+        <div class="card h-100 fade-in">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-user-circle me-2"></i>
+                    Profile Quick Info
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-md-4 text-center mb-3 mb-md-0">
+                        {% if current_user.face_photo %}
+                            <img src="{{ url_for('static', filename=current_user.face_photo) }}" 
+                                 alt="Profile Photo" class="avatar">
+                        {% else %}
+                            <div class="avatar d-flex align-items-center justify-content-center bg-secondary">
+                                <i class="fas fa-user fa-2x"></i>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-8">
+                        <h4 class="mb-1">{{ current_user.name }}</h4>
+                        <p class="text-secondary mb-2">
+                            <i class="fas fa-envelope me-2"></i>{{ current_user.email }}
+                        </p>
+                        <p class="text-muted small mb-3">
+                            <i class="fas fa-calendar me-2"></i>Member since: {{ current_user.created_at.strftime('%B %d, %Y') }}
+                        </p>
+                        <a href="{{ url_for('client.profile') }}" class="btn btn-outline-primary">
+                            <i class="fas fa-user-edit me-2"></i>View Profile
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Animate counters on page load
+document.addEventListener('DOMContentLoaded', function() {
+    // Add staggered animation to cards
+    document.querySelectorAll('.fade-in').forEach(function(card, index) {
+        card.style.animationDelay = (index * 0.1) + 's';
+    });
+    
+    // Load Context Memory Stats
+    loadContextMemoryStats();
+    loadContextLinks();
+    
+    // Check for new emails/notifications periodically
+    setInterval(checkForNotifications, 30000); // Check every 30 seconds
+});
+
+// ==================== NOTIFICATION SYSTEM ====================
+
+// Track seen emails to avoid duplicate notifications
+let seenEmailIds = new Set();
+let lastEmailCount = 0;
+let sessionStartTime = Date.now();
+
+function showNotification(type, title, message, duration = 5000, onClickUrl = null) {
+    const container = document.getElementById('notification-container');
+    if (!container) {
+        // Create notification container if it doesn't exist
+        const newContainer = document.createElement('div');
+        newContainer.id = 'notification-container';
+        newContainer.style.cssText = 'position: fixed; top: 20px; right: 20px; z-index: 9999; max-width: 350px;';
+        document.body.appendChild(newContainer);
+    }
+    
+    const notificationContainer = document.getElementById('notification-container');
+    
+    const icons = {
+        'success': 'fa-check-circle',
+        'error': 'fa-exclamation-circle',
+        'warning': 'fa-exclamation-triangle',
+        'info': 'fa-info-circle',
+        'email': 'fa-envelope',
+        'reminder': 'fa-bell'
+    };
+    
+    const colors = {
+        'success': 'success',
+        'error': 'danger',
+        'warning': 'warning',
+        'info': 'info',
+        'email': 'primary',
+        'reminder': 'secondary'
+    };
+    
+    const notificationId = 'notif-' + Date.now();
+    
+    const notification = document.createElement('div');
+    notification.id = notificationId;
+    notification.className = `alert alert-${colors[type] || 'info'} alert-dismissible fade show mb-2`;
+    notification.style.cssText = 'box-shadow: 0 4px 12px rgba(0,0,0,0.15); animation: slideIn 0.3s ease-out; cursor: pointer;';
+    notification.innerHTML = `
+        <div class="d-flex align-items-start">
+            <i class="fas ${icons[type] || 'fa-info-circle'} me-2 mt-1"></i>
+            <div class="flex-grow-1">
+                <strong>${title}</strong>
+                <p class="mb-0 small">${message}</p>
+            </div>
+            <button type="button" class="btn-close" onclick="event.stopPropagation(); closeNotification('${notificationId}')" aria-label="Close"></button>
+        </div>
+    `;
+    
+    // Add click handler for redirection
+    if (onClickUrl) {
+        notification.addEventListener('click', function() {
+            closeNotification(notificationId);
+            window.location.href = onClickUrl;
+        });
+    }
+    
+    notificationContainer.appendChild(notification);
+    
+    // Auto-remove after duration
+    if (duration > 0) {
+        setTimeout(() => {
+            closeNotification(notificationId);
+        }, duration);
+    }
+    
+    return notificationId;
+}
+
+function closeNotification(notificationId) {
+    const notification = document.getElementById(notificationId);
+    if (notification) {
+        notification.classList.remove('show');
+        notification.classList.add('fade');
+        setTimeout(() => {
+            notification.remove();
+        }, 300);
+    }
+}
+
+function checkForNotifications() {
+    fetch('/check-new-emails', {
+        credentials: 'same-origin'
+    })
+    .then(response => response.json())
+    .then(data => {
+        // Only show notifications for emails that arrived after session started
+        if (data.new_emails && data.new_emails.length > 0) {
+            data.new_emails.forEach(email => {
+                // Check if this email is new (not seen before and arrived after session start)
+                if (!seenEmailIds.has(email.id) && email.sent_at * 1000 > sessionStartTime) {
+                    seenEmailIds.add(email.id);
+                    showNotification(
+                        'email', 
+                        'New Email Received', 
+                        `From: ${email.sender}\nSubject: ${email.subject}`,
+                        8000,
+                        `/email/${email.id}`
+                    );
+                }
+            });
+        }
+        
+        // Check for reminders
+        if (data.upcoming_reminders && data.upcoming_reminders > 0) {
+            showNotification('reminder', 'Upcoming Reminders', `You have ${data.upcoming_reminders} reminder(s) due soon.`, 5000, '/features/reminders');
+        }
+    })
+    .catch(error => console.log('Notification check failed:', error));
+}
+
+// Initialize seen emails on page load
+function initializeSeenEmails() {
+    fetch('/check-new-emails', {
+        credentials: 'same-origin'
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.new_emails) {
+            data.new_emails.forEach(email => {
+                seenEmailIds.add(email.id);
+            });
+        }
+        lastEmailCount = data.total_unread || 0;
+    })
+    .catch(error => console.log('Failed to initialize seen emails:', error));
+}
+
+// ==================== CONTEXT MEMORY FUNCTIONS ====================
+
+function loadContextMemoryStats() {
+    fetch('/context-stats', {
+        credentials: 'same-origin'
+    })
+    .then(response => {
+        if (!response.ok) throw new Error('Not authenticated');
+        return response.json();
+    })
+    .then(data => {
+        // Update badge
+        document.getElementById('contextTotalLinks').textContent = data.total_contexts + ' links';
+        
+        // Update stats
+        document.getElementById('statTotal').textContent = data.total_contexts;
+        document.getElementById('statHigh').textContent = data.high_confidence;
+        document.getElementById('statMedium').textContent = data.medium_confidence;
+        document.getElementById('statLow').textContent = data.low_confidence || 0;
+        document.getElementById('statFeedback').textContent = data.feedback_given;
+        document.getElementById('statThreads').textContent = data.active_threads || data.total_contexts;
+        
+        // Update progress bars
+        const total = data.total_contexts || 1;
+        const highPct = (data.high_confidence / total * 100).toFixed(0);
+        const medPct = (data.medium_confidence / total * 100).toFixed(0);
+        const lowPct = ((data.low_confidence || 0) / total * 100).toFixed(0);
+        
+        document.getElementById('progressHigh').style.width = highPct + '%';
+        document.getElementById('progressHigh').textContent = highPct > 5 ? highPct + '%' : '';
+        document.getElementById('progressMedium').style.width = medPct + '%';
+        document.getElementById('progressMedium').textContent = medPct > 5 ? medPct + '%' : '';
+        document.getElementById('progressLow').style.width = lowPct + '%';
+        document.getElementById('progressLow').textContent = lowPct > 5 ? lowPct + '%' : '';
+    })
+    .catch(error => {
+        console.error('Error loading context stats:', error);
+    });
+}
+
+function loadContextLinks() {
+    fetch('/context-links', {
+        credentials: 'same-origin'
+    })
+    .then(response => {
+        if (!response.ok) throw new Error('Not authenticated');
+        return response.json();
+    })
+    .then(data => {
+        const tbody = document.getElementById('contextLinksBody');
+        
+        if (!data.links || data.links.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">No context links found</td></tr>';
+            return;
+        }
+        
+        tbody.innerHTML = data.links.slice(0, 10).map(link => `
+            <tr>
+                <td>
+                    <a href="/email/${link.current_email_id}" class="text-decoration-none">
+                        ${link.current_subject ? link.current_subject.substring(0, 25) + '...' : 'Email #' + link.current_email_id}
+                    </a>
+                </td>
+                <td>
+                    <a href="/email/${link.related_email_id}" class="text-decoration-none">
+                        ${link.related_subject ? link.related_subject.substring(0, 25) + '...' : 'Email #' + link.related_email_id}
+                    </a>
+                </td>
+                <td>
+                    <span class="badge bg-${link.confidence_level === 'high' ? 'success' : link.confidence_level === 'medium' ? 'warning' : 'secondary'}">
+                        ${Math.round(link.confidence * 100)}%
+                    </span>
+                </td>
+                <td>
+                    <small class="text-info">${link.phrases_count || 0} phrases</small>
+                </td>
+                <td>
+                    <button class="btn btn-sm btn-outline-primary" onclick="viewContextDetails(${link.id})">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                </td>
+            </tr>
+        `).join('');
+    })
+    .catch(error => {
+        console.error('Error loading context links:', error);
+        document.getElementById('contextLinksBody').innerHTML = '<tr><td colspan="5" class="text-center text-muted">Unable to load context links</td></tr>';
+    });
+}
+
+function refreshContextAnalysis() {
+    showNotification('info', 'Refreshing...', 'Analyzing emails for context links...');
+    
+    fetch('/context-analyze-all', {
+        method: 'POST',
+        credentials: 'same-origin'
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showNotification('success', 'Analysis Complete', `Found ${data.new_links} new context links.`);
+            loadContextMemoryStats();
+            loadContextLinks();
+        } else {
+            showNotification('error', 'Analysis Failed', data.error || 'Unknown error');
+        }
+    })
+    .catch(error => {
+        showNotification('error', 'Error', 'Failed to refresh analysis.');
+    });
+}
+
+function viewContextDetails(memoryId) {
+    // Fetch and display context details
+    fetch(`/context/${memoryId}/summary`, {
+        credentials: 'same-origin'
+    })
+    .then(response => {
+        if (!response.ok) throw new Error('Not found');
+        return response.json();
+    })
+    .then(data => {
+        // Create modal with details
+        const modalHtml = `
+            <div class="modal fade" id="contextDetailModal" tabindex="-1">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header bg-info text-white">
+                            <h5 class="modal-title"><i class="fas fa-brain me-2"></i>Context Details</h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <strong>Subject:</strong> ${data.subject || 'N/A'}
+                            </div>
+                            <div class="mb-3">
+                                <strong>Confidence:</strong> 
+                                <span class="badge bg-${data.confidence_level === 'high' ? 'success' : data.confidence_level === 'medium' ? 'warning' : 'secondary'}">
+                                    ${Math.round(data.confidence * 100)}%
+                                </span>
+                            </div>
+                            ${data.summary_text ? `<div class="mb-3"><strong>Summary:</strong><p>${data.summary_text}</p></div>` : ''}
+                            ${data.key_decisions ? `<div class="mb-3"><strong>Key Decisions:</strong><p>${data.key_decisions}</p></div>` : ''}
+                            ${data.pending_tasks ? `<div class="mb-3"><strong>Pending Tasks:</strong><p>${data.pending_tasks}</p></div>` : ''}
+                            ${data.key_points ? `<div class="mb-3"><strong>Key Points:</strong><p>${data.key_points}</p></div>` : ''}
+                        </div>
+                        <div class="modal-footer">
+                            <a href="/email/${data.email_id}" class="btn btn-primary">
+                                <i class="fas fa-envelope me-1"></i>View Email
+                            </a>
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // Remove existing modal if any
+        const existingModal = document.getElementById('contextDetailModal');
+        if (existingModal) existingModal.remove();
+        
+        // Add modal to body
+        document.body.insertAdjacentHTML('beforeend', modalHtml);
+        
+        // Show modal
+        const modal = new bootstrap.Modal(document.getElementById('contextDetailModal'));
+        modal.show();
+    })
+    .catch(error => {
+        showNotification('error', 'Error', 'Failed to load context details.');
+    });
+}
+</script>
+{% endblock %}

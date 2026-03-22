@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block title %}My QR Code - SNS Mail{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h2 class="mb-4">
+            <i class="fas fa-qrcode text-dark"></i>
+            My QR Code
+        </h2>
+    </div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card text-center">
+            <div class="card-header">
+                <h5 class="mb-0">Your Personal QR Code</h5>
+            </div>
+            <div class="card-body">
+                {% if qr_code %}
+                <div class="mb-3">
+                    <img src="{{ qr_code }}" alt="QR Code" class="img-fluid" style="max-width: 300px;">
+                </div>
+                <p class="text-muted">
+                    Scan this QR code to quickly share your contact information or start an email to you.
+                </p>
+                <hr>
+                <p><strong>Your Email:</strong> {{ current_user.email }}</p>
+                {% else %}
+                <div class="py-4">
+                    <i class="fas fa-qrcode fa-4x text-muted mb-3"></i>
+                    <p class="text-muted">QR code not available. Please contact support.</p>
+                </div>
+                {% endif %}
+            </div>
+            <div class="card-footer">
+                <a href="{{ url_for('client.dashboard') }}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-info-circle"></i> How to Use</h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled">
+                    <li class="mb-2">
+                        <i class="fas fa-check text-success me-2"></i>
+                        Share your QR code with others so they can quickly send you emails
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-check text-success me-2"></i>
+                        Others can scan this code using the SNS Mail QR scanner
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-check text-success me-2"></i>
+                        Scanning automatically opens a compose window with your email as recipient
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

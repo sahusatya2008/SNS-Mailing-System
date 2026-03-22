@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Draft - SNS Mail{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h2 class="mb-4">
+            <i class="fas fa-edit text-warning"></i>
+            Edit Draft
+        </h2>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-body">
+                <form method="POST" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label for="recipient" class="form-label">To (Recipient Email)</label>
+                        <input type="email" class="form-control" id="recipient" name="recipient" 
+                               value="{{ draft.recipient_email }}" placeholder="recipient@snsx.com">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="subject" class="form-label">Subject</label>
+                        <input type="text" class="form-control" id="subject" name="subject" 
+                               value="{{ draft.subject }}" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="body" class="form-label">Message</label>
+                        <textarea class="form-control" id="body" name="body" rows="10" 
+                                  required>{{ draft.body }}</textarea>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="attachment" class="form-label">Attachment</label>
+                        <input type="file" class="form-control" id="attachment" name="attachment">
+                        {% if draft.attachment_filename %}
+                            <small class="text-muted">Current: {{ draft.attachment_filename }}</small>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-warning">
+                            <i class="fas fa-save"></i> Save Draft
+                        </button>
+                        <a href="{{ url_for('client.drafts') }}" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-info-circle"></i> Draft Info</h5>
+            </div>
+            <div class="card-body">
+                <p><strong>Created:</strong> {{ draft.created_at.strftime('%Y-%m-%d %H:%M') }}</p>
+                <p><strong>Last Updated:</strong> {{ draft.updated_at.strftime('%Y-%m-%d %H:%M') }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
