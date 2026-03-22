@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block title %}Email Activity Report - SNS Mail{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h2 class="mb-4">
+            <i class="fas fa-envelope text-primary"></i>
+            Email Activity Report
+        </h2>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Subject</th>
+                        <th>From</th>
+                        <th>To</th>
+                        <th>Sent At</th>
+                        <th>Status</th>
+                        <th>Attachment</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for email in emails %}
+                        <tr>
+                            <td>{{ email.id }}</td>
+                            <td>{{ email.subject[:40] }}{% if email.subject|length > 40 %}...{% endif %}</td>
+                            <td>{{ email.sender.email }}</td>
+                            <td>{{ email.recipient.email }}</td>
+                            <td>{{ email.sent_at.strftime('%Y-%m-%d %H:%M') if email.sent_at else 'N/A' }}</td>
+                            <td>
+                                {% if email.is_spam %}
+                                    <span class="badge bg-danger">Spam</span>
+                                {% elif email.is_deleted %}
+                                    <span class="badge bg-secondary">Deleted</span>
+                                {% elif email.is_important %}
+                                    <span class="badge bg-warning">Important</span>
+                                {% elif not email.is_read %}
+                                    <span class="badge bg-info">Unread</span>
+                                {% else %}
+                                    <span class="badge bg-success">Read</span>
+                                {% endif %}
+                                {% if email.virus_detected %}
+                                    <span class="badge bg-danger">Virus</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if email.attachment_filename %}
+                                    <span class="badge bg-primary">Yes</span>
+                                {% else %}
+                                    <span class="text-muted">No</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="7" class="text-center">No emails found</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="mt-3">
+    <a href="{{ url_for('admin.reports') }}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Back to Reports
+    </a>
+</div>
+{% endblock %}

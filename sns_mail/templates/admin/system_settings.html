@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block title %}System Settings - SNS Mail{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h2 class="mb-4">
+            <i class="fas fa-cog text-primary"></i>
+            System Settings
+        </h2>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">Application Settings</h5>
+    </div>
+    <div class="card-body">
+        <form action="{{ url_for('admin.update_system_settings') }}" method="POST">
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label class="form-label">Application Name</label>
+                    <input type="text" class="form-control" value="SNS Mail" disabled>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Domain</label>
+                    <input type="text" class="form-control" value="@snsx.com" disabled>
+                </div>
+            </div>
+            
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label class="form-label">Max Login Attempts</label>
+                    <input type="number" class="form-control" value="5" disabled>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Account Lock Duration (minutes)</label>
+                    <input type="number" class="form-control" value="30" disabled>
+                </div>
+            </div>
+            
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label class="form-label">Rate Limit (per minute)</label>
+                    <input type="number" class="form-control" value="5" disabled>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Max File Upload Size (MB)</label>
+                    <input type="number" class="form-control" value="16" disabled>
+                </div>
+            </div>
+            
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i>
+                System settings are currently read-only. Modify configuration files to change these values.
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card mt-4">
+    <div class="card-header">
+        <h5 class="mb-0">Security Settings</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-check form-switch mb-3">
+                    <input class="form-check-input" type="checkbox" id="2faRequired" disabled>
+                    <label class="form-check-label" for="2faRequired">Require 2FA for all users</label>
+                </div>
+                <div class="form-check form-switch mb-3">
+                    <input class="form-check-input" type="checkbox" id="virusScan" checked disabled>
+                    <label class="form-check-label" for="virusScan">Enable virus scanning for attachments</label>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-check form-switch mb-3">
+                    <input class="form-check-input" type="checkbox" id="emailVerification" disabled>
+                    <label class="form-check-label" for="emailVerification">Require email verification</label>
+                </div>
+                <div class="form-check form-switch mb-3">
+                    <input class="form-check-input" type="checkbox" id="faceRecognition" checked disabled>
+                    <label class="form-check-label" for="faceRecognition">Enable face recognition login</label>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

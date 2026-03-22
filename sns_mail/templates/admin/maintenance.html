@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+
+{% block title %}Maintenance - SNS Mail{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h2 class="mb-4">
+            <i class="fas fa-tools text-primary"></i>
+            System Maintenance
+        </h2>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="mb-0">Clear Old Logs</h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted">Remove security logs older than 30 days to free up database space.</p>
+                <form action="{{ url_for('admin.clear_logs') }}" method="POST">
+                    <button type="submit" class="btn btn-warning" onclick="return confirm('Clear old security logs?')">
+                        <i class="fas fa-broom"></i> Clear Old Logs
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="mb-0">Virus Scan</h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted">Trigger a full virus scan of all uploaded attachments.</p>
+                <form action="{{ url_for('admin.scan_viruses') }}" method="POST">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-shield-virus"></i> Run Virus Scan
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">Database Statistics</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-3 text-center mb-3">
+                <h5>Users</h5>
+                <p class="display-6 text-primary">-</p>
+            </div>
+            <div class="col-md-3 text-center mb-3">
+                <h5>Emails</h5>
+                <p class="display-6 text-info">-</p>
+            </div>
+            <div class="col-md-3 text-center mb-3">
+                <h5>Security Logs</h5>
+                <p class="display-6 text-warning">-</p>
+            </div>
+            <div class="col-md-3 text-center mb-3">
+                <h5>Virus Scans</h5>
+                <p class="display-6 text-danger">-</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card mt-4">
+    <div class="card-header">
+        <h5 class="mb-0">System Information</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <p><strong>Python Version:</strong> <span class="text-muted">-</span></p>
+                <p><strong>Flask Version:</strong> <span class="text-muted">-</span></p>
+                <p><strong>Database:</strong> <span class="text-muted">SQLite</span></p>
+            </div>
+            <div class="col-md-6">
+                <p><strong>Debug Mode:</strong> <span class="text-muted">-</span></p>
+                <p><strong>Server Time:</strong> <span class="text-muted">-</span></p>
+                <p><strong>Upload Folder:</strong> <span class="text-muted">uploads/</span></p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,399 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard - SNS Mail{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="row mb-4">
+    <div class="col-12">
+        <h2>
+            <i class="fas fa-users-cog"></i>
+            Admin Dashboard
+        </h2>
+    </div>
+</div>
+
+<!-- Statistics Cards Row 1 -->
+<div class="row mb-4">
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card bg-primary text-white h-100 fade-in">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title">Total Users</h6>
+                        <h3 class="mb-0" data-counter="{{ total_users }}">{{ total_users }}</h3>
+                    </div>
+                    <div class="text-end">
+                        <i class="fas fa-users fa-2x"></i>
+                    </div>
+                </div>
+                <div class="progress mt-3" style="height: 4px;">
+                    <div class="progress-bar bg-white" style="width: 100%"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card bg-success text-white h-100 fade-in">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title">Active Users</h6>
+                        <h3 class="mb-0" data-counter="{{ active_users }}">{{ active_users }}</h3>
+                    </div>
+                    <div class="text-end">
+                        <i class="fas fa-user-check fa-2x"></i>
+                    </div>
+                </div>
+                <div class="progress mt-3" style="height: 4px;">
+                    <div class="progress-bar bg-white" style="width: {{ (active_users / total_users * 100) if total_users > 0 else 0 }}%"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card bg-danger text-white h-100 fade-in">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title">Banned Users</h6>
+                        <h3 class="mb-0" data-counter="{{ banned_users }}">{{ banned_users }}</h3>
+                    </div>
+                    <div class="text-end">
+                        <i class="fas fa-user-slash fa-2x"></i>
+                    </div>
+                </div>
+                <div class="progress mt-3" style="height: 4px;">
+                    <div class="progress-bar bg-white" style="width: {{ (banned_users / total_users * 100) if total_users > 0 else 0 }}%"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card bg-info text-white h-100 fade-in">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title">Total Emails</h6>
+                        <h3 class="mb-0" data-counter="{{ total_emails }}">{{ total_emails }}</h3>
+                    </div>
+                    <div class="text-end">
+                        <i class="fas fa-envelope fa-2x"></i>
+                    </div>
+                </div>
+                <div class="progress mt-3" style="height: 4px;">
+                    <div class="progress-bar bg-white" style="width: 75%"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Statistics Cards Row 2 -->
+<div class="row mb-4">
+    <div class="col-md-6 mb-3">
+        <div class="card bg-warning text-white h-100 fade-in">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title">Spam Emails</h6>
+                        <h3 class="mb-0" data-counter="{{ spam_emails }}">{{ spam_emails }}</h3>
+                    </div>
+                    <div class="text-end">
+                        <i class="fas fa-exclamation-triangle fa-2x"></i>
+                    </div>
+                </div>
+                <div class="progress mt-3" style="height: 4px;">
+                    <div class="progress-bar bg-white" style="width: {{ (spam_emails / total_emails * 100) if total_emails > 0 else 0 }}%"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 mb-3">
+        <div class="card bg-secondary text-white h-100 fade-in">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title">Virus Scans</h6>
+                        <h3 class="mb-0" data-counter="{{ virus_scans }}">{{ virus_scans }}</h3>
+                    </div>
+                    <div class="text-end">
+                        <i class="fas fa-shield-virus fa-2x"></i>
+                    </div>
+                </div>
+                <div class="progress mt-3" style="height: 4px;">
+                    <div class="progress-bar bg-white" style="width: 85%"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Recent Users -->
+    <div class="col-lg-6 mb-4">
+        <div class="card h-100 fade-in">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="fas fa-users me-2"></i>
+                    Recent Users
+                </h5>
+                <a href="{{ url_for('admin.users') }}" class="btn btn-sm btn-outline-primary">View All</a>
+            </div>
+            <div class="card-body p-0">
+                {% if recent_users %}
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>User</th>
+                                    <th>Email</th>
+                                    <th>Created</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for user in recent_users %}
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <div class="avatar-sm me-2 d-flex align-items-center justify-content-center bg-secondary rounded-circle" style="width: 32px; height: 32px;">
+                                                    <span class="text-white small">{{ user.username[0] | upper }}</span>
+                                                </div>
+                                                <span class="verified-name">
+                                                    {{ user.username }}
+                                                    {% if user.is_verified %}
+                                                        <span class="verified-badge verified-badge-sm" data-tooltip="Verified User">
+                                                            <i class="fas fa-check"></i>
+                                                        </span>
+                                                    {% endif %}
+                                                </span>
+                                            </div>
+                                        </td>
+                                        <td><small>{{ user.email }}</small></td>
+                                        <td><small>{{ user.created_at.strftime('%d %b') if user.created_at else 'N/A' }}</small></td>
+                                        <td>
+                                            {% if user.is_banned %}
+                                                <span class="badge bg-danger">Banned</span>
+                                            {% else %}
+                                                <span class="badge bg-success">Active</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="empty-state p-4">
+                        <i class="fas fa-users"></i>
+                        <p>No users found</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Recent Emails -->
+    <div class="col-lg-6 mb-4">
+        <div class="card h-100 fade-in">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="fas fa-envelope me-2"></i>
+                    Recent Emails
+                </h5>
+                <a href="{{ url_for('admin.emails') }}" class="btn btn-sm btn-outline-primary">View All</a>
+            </div>
+            <div class="card-body p-0">
+                {% if recent_emails %}
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Subject</th>
+                                    <th>From</th>
+                                    <th>Date</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for email in recent_emails %}
+                                    <tr>
+                                        <td>
+                                            <span class="fw-semibold">{{ email.subject[:30] }}{% if email.subject|length > 30 %}...{% endif %}</span>
+                                        </td>
+                                        <td><small>{{ email.sender.email }}</small></td>
+                                        <td><small>{{ email.sent_at.strftime('%d %b %H:%M') if email.sent_at else 'N/A' }}</small></td>
+                                        <td>
+                                            {% if email.is_spam %}
+                                                <span class="badge bg-warning">Spam</span>
+                                            {% elif email.has_virus %}
+                                                <span class="badge bg-danger">Virus</span>
+                                            {% else %}
+                                                <span class="badge bg-success">Clean</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="empty-state p-4">
+                        <i class="fas fa-envelope"></i>
+                        <p>No emails found</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Security Logs -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card fade-in">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="fas fa-shield-alt me-2"></i>
+                    Recent Security Activity
+                </h5>
+                <a href="{{ url_for('admin.security_logs') }}" class="btn btn-sm btn-outline-primary">View All Logs</a>
+            </div>
+            <div class="card-body p-0">
+                {% if recent_security_logs %}
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Action</th>
+                                    <th>User</th>
+                                    <th>IP Address</th>
+                                    <th>Timestamp</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for log in recent_security_logs %}
+                                    <tr>
+                                        <td>
+                                            <i class="fas fa-{% if 'LOGIN' in log.action %}sign-in-alt{% elif 'LOGOUT' in log.action %}sign-out-alt{% elif 'BANNED' in log.action %}ban{% else %}info-circle{% endif %} me-2"></i>
+                                            {{ log.action }}
+                                        </td>
+                                        <td>{{ log.user_id }}</td>
+                                        <td>
+                                            <code>{{ log.ip_address }}</code>
+                                        </td>
+                                        <td>{{ log.timestamp.strftime('%Y-%m-%d %H:%M') if log.timestamp else 'N/A' }}</td>
+                                        <td>
+                                            <span class="badge 
+                                                {% if 'SUCCESS' in log.action %}bg-success
+                                                {% elif 'FAILED' in log.action %}bg-danger
+                                                {% elif 'BANNED' in log.action %}bg-warning
+                                                {% else %}bg-info{% endif %}">
+                                                {% if 'SUCCESS' in log.action %}Success{% elif 'FAILED' in log.action %}Failed{% elif 'BANNED' in log.action %}Banned{% else %}Info{% endif %}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="empty-state p-4">
+                        <i class="fas fa-shield-alt"></i>
+                        <p>No security logs found</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="row">
+    <div class="col-12">
+        <div class="card fade-in">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-bolt me-2"></i>
+                    Admin Actions
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-lg-3 col-md-6">
+                        <a href="{{ url_for('admin.users') }}" class="quick-action-btn">
+                            <i class="fas fa-users-cog"></i>
+                            <small>Manage Users</small>
+                        </a>
+                    </div>
+                    <div class="col-lg-3 col-md-6">
+                        <a href="{{ url_for('admin.emails') }}" class="quick-action-btn">
+                            <i class="fas fa-envelope-open-text"></i>
+                            <small>Manage Emails</small>
+                        </a>
+                    </div>
+                    <div class="col-lg-3 col-md-6">
+                        <a href="{{ url_for('admin.security_logs') }}" class="quick-action-btn">
+                            <i class="fas fa-shield-alt"></i>
+                            <small>Security Logs</small>
+                        </a>
+                    </div>
+                    <div class="col-lg-3 col-md-6">
+                        <a href="{{ url_for('admin.reports') }}" class="quick-action-btn">
+                            <i class="fas fa-chart-bar"></i>
+                            <small>Reports</small>
+                        </a>
+                    </div>
+                    <div class="col-lg-3 col-md-6">
+                        <a href="{{ url_for('admin.virus_scans') }}" class="quick-action-btn">
+                            <i class="fas fa-virus-slash"></i>
+                            <small>Virus Scans</small>
+                        </a>
+                    </div>
+                    <div class="col-lg-3 col-md-6">
+                        <a href="{{ url_for('admin.system_stats') }}" class="quick-action-btn">
+                            <i class="fas fa-server"></i>
+                            <small>System Stats</small>
+                        </a>
+                    </div>
+                    <div class="col-lg-3 col-md-6">
+                        <a href="{{ url_for('admin.system_settings') }}" class="quick-action-btn">
+                            <i class="fas fa-cogs"></i>
+                            <small>Settings</small>
+                        </a>
+                    </div>
+                    <div class="col-lg-3 col-md-6">
+                        <a href="{{ url_for('admin.maintenance') }}" class="quick-action-btn">
+                            <i class="fas fa-tools"></i>
+                            <small>Maintenance</small>
+                        </a>
+                    </div>
+                    <div class="col-lg-3 col-md-6">
+                        <a href="{{ url_for('admin.context_memory') }}" class="quick-action-btn">
+                            <i class="fas fa-brain"></i>
+                            <small>Context Memory</small>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Add staggered animation to cards
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.fade-in').forEach(function(card, index) {
+        card.style.animationDelay = (index * 0.05) + 's';
+    });
+});
+</script>
+{% endblock %}

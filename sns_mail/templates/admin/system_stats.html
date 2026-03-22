@@ -1,0 +1,225 @@
+{% extends "base.html" %}
+
+{% block title %}System Statistics - SNS Mail{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h2 class="mb-4">
+            <i class="fas fa-server text-primary"></i>
+            System Statistics
+        </h2>
+    </div>
+</div>
+
+<!-- User Statistics -->
+<div class="row mb-4">
+    <div class="col-12">
+        <h5 class="mb-3">User Statistics</h5>
+    </div>
+    <div class="col-md-2">
+        <div class="card bg-primary text-white">
+            <div class="card-body text-center">
+                <h4>{{ total_users }}</h4>
+                <small>Total Users</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="card bg-success text-white">
+            <div class="card-body text-center">
+                <h4>{{ active_users }}</h4>
+                <small>Active (7d)</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="card bg-danger text-white">
+            <div class="card-body text-center">
+                <h4>{{ banned_users }}</h4>
+                <small>Banned</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="card bg-warning text-white">
+            <div class="card-body text-center">
+                <h4>{{ admin_users }}</h4>
+                <small>Admins</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="card bg-info text-white">
+            <div class="card-body text-center">
+                <h4>{{ server_admin_users }}</h4>
+                <small>Server Admins</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Email Statistics -->
+<div class="row mb-4">
+    <div class="col-12">
+        <h5 class="mb-3">Email Statistics</h5>
+    </div>
+    <div class="col-md-2">
+        <div class="card bg-primary text-white">
+            <div class="card-body text-center">
+                <h4>{{ total_emails }}</h4>
+                <small>Total Emails</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="card bg-success text-white">
+            <div class="card-body text-center">
+                <h4>{{ emails_today }}</h4>
+                <small>Today</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="card bg-info text-white">
+            <div class="card-body text-center">
+                <h4>{{ emails_this_month }}</h4>
+                <small>This Month</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="card bg-danger text-white">
+            <div class="card-body text-center">
+                <h4>{{ spam_emails }}</h4>
+                <small>Spam</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="card bg-warning text-white">
+            <div class="card-body text-center">
+                <h4>{{ important_emails }}</h4>
+                <small>Important</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="card bg-secondary text-white">
+            <div class="card-body text-center">
+                <h4>{{ deleted_emails }}</h4>
+                <small>Deleted</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Other Statistics -->
+<div class="row mb-4">
+    <div class="col-12">
+        <h5 class="mb-3">Other Statistics</h5>
+    </div>
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-body text-center">
+                <h4>{{ total_notes }}</h4>
+                <small class="text-muted">Notes</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-body text-center">
+                <h4>{{ total_drafts }}</h4>
+                <small class="text-muted">Drafts</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-body text-center">
+                <h4>{{ virus_scans }}</h4>
+                <small class="text-muted">Virus Scans</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-body text-center">
+                <h4>{{ infected_files }}</h4>
+                <small class="text-muted">Infected Files</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Activity -->
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Recent Logins</h5>
+            </div>
+            <div class="card-body">
+                {% if recent_logins %}
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>User ID</th>
+                                    <th>IP</th>
+                                    <th>Time</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for log in recent_logins %}
+                                    <tr>
+                                        <td>{{ log.user_id }}</td>
+                                        <td>{{ log.ip_address }}</td>
+                                        <td>{{ log.timestamp.strftime('%Y-%m-%d %H:%M') if log.timestamp else 'N/A' }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted text-center">No recent logins</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Recent Registrations</h5>
+            </div>
+            <div class="card-body">
+                {% if recent_registrations %}
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>User ID</th>
+                                    <th>IP</th>
+                                    <th>Time</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for log in recent_registrations %}
+                                    <tr>
+                                        <td>{{ log.user_id }}</td>
+                                        <td>{{ log.ip_address }}</td>
+                                        <td>{{ log.timestamp.strftime('%Y-%m-%d %H:%M') if log.timestamp else 'N/A' }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted text-center">No recent registrations</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

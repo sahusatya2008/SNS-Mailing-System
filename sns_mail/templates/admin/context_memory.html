@@ -1,0 +1,411 @@
+{% extends "base.html" %}
+
+{% block title %}Context Memory - Intelligent Thread Analysis{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="row mb-4">
+    <div class="col-12">
+        <h2>
+            <i class="fas fa-brain text-info"></i>
+            Context Memory - Intelligent Thread Analysis
+        </h2>
+        <p class="text-muted">Automatically detects and links related email conversations across threads</p>
+    </div>
+</div>
+
+<!-- Action Buttons -->
+<div class="row mb-3">
+    <div class="col-12">
+        <form action="{{ url_for('admin.analyze_emails_context') }}" method="POST" style="display: inline;">
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-sync-alt me-2"></i>Analyze All Emails
+            </button>
+        </form>
+        <a href="{{ url_for('admin.context_memory') }}" class="btn btn-outline-success ms-2">
+            <i class="fas fa-refresh me-2"></i>Refresh Page
+        </a>
+        <button class="btn btn-outline-secondary ms-2" data-bs-toggle="modal" data-bs-target="#addPhraseModal">
+            <i class="fas fa-plus me-2"></i>Add Detection Phrase
+        </button>
+    </div>
+</div>
+
+<!-- Statistics Cards -->
+<div class="row mb-4">
+    <div class="col-lg-2 col-md-4 col-6 mb-3">
+        <div class="card bg-primary text-white h-100">
+            <div class="card-body text-center">
+                <i class="fas fa-link fa-2x mb-2"></i>
+                <h3 class="mb-0">{{ stats.total_memories }}</h3>
+                <small>Total Links</small>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-2 col-md-4 col-6 mb-3">
+        <div class="card bg-success text-white h-100">
+            <div class="card-body text-center">
+                <i class="fas fa-check-circle fa-2x mb-2"></i>
+                <h3 class="mb-0">{{ stats.high_confidence }}</h3>
+                <small>High Confidence</small>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-2 col-md-4 col-6 mb-3">
+        <div class="card bg-warning text-white h-100">
+            <div class="card-body text-center">
+                <i class="fas fa-exclamation-circle fa-2x mb-2"></i>
+                <h3 class="mb-0">{{ stats.medium_confidence }}</h3>
+                <small>Medium</small>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-2 col-md-4 col-6 mb-3">
+        <div class="card bg-secondary text-white h-100">
+            <div class="card-body text-center">
+                <i class="fas fa-question-circle fa-2x mb-2"></i>
+                <h3 class="mb-0">{{ stats.low_confidence }}</h3>
+                <small>Low</small>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-2 col-md-4 col-6 mb-3">
+        <div class="card bg-info text-white h-100">
+            <div class="card-body text-center">
+                <i class="fas fa-comments fa-2x mb-2"></i>
+                <h3 class="mb-0">{{ stats.total_feedback }}</h3>
+                <small>Feedback</small>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-2 col-md-4 col-6 mb-3">
+        <div class="card bg-dark text-white h-100">
+            <div class="card-body text-center">
+                <i class="fas fa-project-diagram fa-2x mb-2"></i>
+                <h3 class="mb-0">{{ stats.active_threads }}</h3>
+                <small>Active Threads</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Detection Methods Status -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-cog text-primary me-2"></i>Detection Methods Status</h5>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-md-3 mb-3">
+                        <div class="border rounded p-3">
+                            <i class="fas fa-quote-left fa-2x text-primary mb-2"></i>
+                            <h6>Phrase Detection</h6>
+                            <h4 class="text-primary">{{ stats.total_phrases }}</h4>
+                            <span class="badge bg-success">Active</span>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="border rounded p-3">
+                            <i class="fas fa-users fa-2x text-success mb-2"></i>
+                            <h6>Participant Matching</h6>
+                            <h4 class="text-success">Active</h4>
+                            <span class="badge bg-success">Enabled</span>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="border rounded p-3">
+                            <i class="fas fa-heading fa-2x text-warning mb-2"></i>
+                            <h6>Subject Alignment</h6>
+                            <h4 class="text-warning">Active</h4>
+                            <span class="badge bg-success">Enabled</span>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="border rounded p-3">
+                            <i class="fas fa-clock fa-2x text-info mb-2"></i>
+                            <h6>Recency Weighting</h6>
+                            <h4 class="text-info">Active</h4>
+                            <span class="badge bg-success">Enabled</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Tabs -->
+<ul class="nav nav-tabs mb-4" id="contextTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="overview-tab" data-bs-toggle="tab" data-bs-target="#overview" type="button">
+            <i class="fas fa-chart-pie me-2"></i>Overview
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="phrases-tab" data-bs-toggle="tab" data-bs-target="#phrases" type="button">
+            <i class="fas fa-list me-2"></i>Detection Phrases ({{ phrases|length }})
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="recent-tab" data-bs-toggle="tab" data-bs-target="#recent" type="button">
+            <i class="fas fa-history me-2"></i>Recent Thread Links ({{ recent_memories|length }})
+        </button>
+    </li>
+</ul>
+
+<div class="tab-content" id="contextTabsContent">
+    <!-- Overview Tab -->
+    <div class="tab-pane fade show active" id="overview" role="tabpanel">
+        <div class="row">
+            <div class="col-lg-6 mb-4">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-info-circle text-primary me-2"></i>How Context Memory Works</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-muted">The Context Memory Across Threads feature automatically detects when emails reference prior discussions and intelligently links related conversations.</p>
+                        
+                        <h6 class="mt-4"><i class="fas fa-cog text-info me-2"></i>Detection Methods</h6>
+                        <ul class="list-unstyled">
+                            <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Phrase detection (e.g., "as discussed earlier")</li>
+                            <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Semantic similarity analysis</li>
+                            <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Participant overlap matching</li>
+                            <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Subject line alignment</li>
+                            <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Action item tracking</li>
+                        </ul>
+                        
+                        <h6 class="mt-4"><i class="fas fa-percentage text-warning me-2"></i>Confidence Scoring</h6>
+                        <div class="mb-2">
+                            <span class="badge bg-success me-2">High (75%+)</span>
+                            <span class="badge bg-warning text-dark me-2">Medium (50-74%)</span>
+                            <span class="badge bg-secondary">Low (25-49%)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-6 mb-4">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-chart-bar text-success me-2"></i>Confidence Distribution</h5>
+                    </div>
+                    <div class="card-body">
+                        {% if stats.total_memories > 0 %}
+                        <div class="mb-4">
+                            <h6>Distribution</h6>
+                            <div class="progress" style="height: 30px;">
+                                {% set high_pct = (stats.high_confidence / stats.total_memories * 100)|round(1) %}
+                                {% set med_pct = (stats.medium_confidence / stats.total_memories * 100)|round(1) %}
+                                {% set low_pct = (stats.low_confidence / stats.total_memories * 100)|round(1) %}
+                                <div class="progress-bar bg-success" style="width: {{ high_pct }}%">{{ stats.high_confidence }}</div>
+                                <div class="progress-bar bg-warning text-dark" style="width: {{ med_pct }}%">{{ stats.medium_confidence }}</div>
+                                <div class="progress-bar bg-secondary" style="width: {{ low_pct }}%">{{ stats.low_confidence }}</div>
+                            </div>
+                        </div>
+                        {% else %}
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>No context links yet. Click "Analyze All Emails" to start detecting related threads.
+                        </div>
+                        {% endif %}
+                        
+                        <div class="row text-center">
+                            <div class="col-6">
+                                <h4 class="text-primary">{{ stats.total_summaries }}</h4>
+                                <small class="text-muted">Generated Summaries</small>
+                            </div>
+                            <div class="col-6">
+                                <h4 class="text-info">{{ stats.total_feedback }}</h4>
+                                <small class="text-muted">User Feedback</small>
+                            </div>
+                        </div>
+                        
+                        <hr>
+                        
+                        <div class="row text-center">
+                            <div class="col-6">
+                                <h4 class="text-success">{{ stats.relevant_feedback }}</h4>
+                                <small class="text-muted">Marked Relevant</small>
+                            </div>
+                            <div class="col-6">
+                                <h4 class="text-danger">{{ stats.not_relevant_feedback }}</h4>
+                                <small class="text-muted">Marked Not Relevant</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Phrases Tab -->
+    <div class="tab-pane fade" id="phrases" role="tabpanel">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-quote-left text-info me-2"></i>Detection Phrases</h5>
+                <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addPhraseModal">
+                    <i class="fas fa-plus me-1"></i> Add Phrase
+                </button>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>Phrase</th>
+                                <th>Type</th>
+                                <th>Weight</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for phrase in phrases %}
+                            <tr>
+                                <td><code>"{{ phrase.phrase }}"</code></td>
+                                <td>
+                                    <span class="badge 
+                                        {% if phrase.phrase_type == 'reference' %}bg-primary
+                                        {% elif phrase.phrase_type == 'followup' %}bg-warning text-dark
+                                        {% else %}bg-info{% endif %}">
+                                        {{ phrase.phrase_type }}
+                                    </span>
+                                </td>
+                                <td>{{ phrase.weight }}</td>
+                                <td>
+                                    {% if phrase.is_active %}
+                                        <span class="badge bg-success">Active</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">Inactive</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <form action="{{ url_for('admin.delete_context_phrase', phrase_id=phrase.id) }}" method="POST" style="display: inline;">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Deactivate this phrase?')">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="5" class="text-center text-muted py-4">
+                                    <i class="fas fa-quote-left fa-2x mb-2"></i>
+                                    <p>No detection phrases found. Click "Add Phrase" to create one.</p>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Recent Links Tab -->
+    <div class="tab-pane fade" id="recent" role="tabpanel">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-history text-warning me-2"></i>Recent Thread Links</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>Email Subject</th>
+                                <th>Related To</th>
+                                <th>Confidence</th>
+                                <th>Created</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for memory in recent_memories %}
+                            <tr>
+                                <td>
+                                    {% if memory.current_email %}
+                                        <a href="{{ url_for('client.view_email', email_id=memory.current_email_id) }}">
+                                            {{ memory.current_email.subject[:50] }}{% if memory.current_email.subject|length > 50 %}...{% endif %}
+                                        </a>
+                                    {% else %}
+                                        <span class="text-muted">Email #{{ memory.current_email_id }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if memory.related_email %}
+                                        <a href="{{ url_for('client.view_email', email_id=memory.related_email_id) }}">
+                                            {{ memory.related_email.subject[:50] }}{% if memory.related_email.subject|length > 50 %}...{% endif %}
+                                        </a>
+                                    {% else %}
+                                        <span class="text-muted">Email #{{ memory.related_email_id }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="badge 
+                                        {% if memory.confidence_level == 'high' %}bg-success
+                                        {% elif memory.confidence_level == 'medium' %}bg-warning text-dark
+                                        {% else %}bg-secondary{% endif %}">
+                                        {{ (memory.overall_confidence * 100)|round(1) }}%
+                                    </span>
+                                </td>
+                                <td><small>{{ memory.created_at.strftime('%Y-%m-%d %H:%M') if memory.created_at else '-' }}</small></td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="4" class="text-center text-muted py-5">
+                                    <i class="fas fa-link fa-3x mb-3"></i>
+                                    <h5>No context links created yet</h5>
+                                    <p>Click "Analyze All Emails" to detect related email threads</p>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Phrase Modal -->
+<div class="modal fade" id="addPhraseModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-plus text-primary me-2"></i>Add Detection Phrase</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="{{ url_for('admin.add_context_phrase') }}" method="POST">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Phrase</label>
+                        <input type="text" class="form-control" name="phrase" required placeholder="e.g., as discussed previously">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Type</label>
+                        <select class="form-select" name="phrase_type">
+                            <option value="reference">Reference</option>
+                            <option value="followup">Follow-up</option>
+                            <option value="continuation">Continuation</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Weight</label>
+                        <input type="number" class="form-control" name="weight" value="1.0" min="0.1" max="2.0" step="0.1">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-plus me-1"></i>Add Phrase</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
