@@ -1,0 +1,227 @@
+{% extends "base.html" %}
+
+{% block title %}Register - SNS Mail{% endblock %}
+
+{% block content %}
+<!-- Hero Section with Parallax -->
+<section class="hero-section mb-5">
+    <div class="hero-content">
+        <h1 class="hero-title">Join SNS Mail</h1>
+        <p class="hero-subtitle">Create Your Secure Digital Identity</p>
+    </div>
+</section>
+
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card shadow-lg fade-in">
+            <div class="card-header text-center">
+                <h5 class="mb-0">
+                    <i class="fas fa-user-plus me-2"></i>
+                    Create New Account
+                </h5>
+            </div>
+            <div class="card-body p-4">
+                <form method="POST" action="{{ url_for('auth.register') }}" enctype="multipart/form-data">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="username" class="form-label">
+                                <i class="fas fa-user me-2"></i>Username
+                            </label>
+                            <input type="text" class="form-control" id="username" name="username" required
+                                   placeholder="Choose a username" pattern="[a-zA-Z0-9_]+"
+                                   title="Username can only contain letters, numbers, and underscores">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="email" class="form-label">
+                                <i class="fas fa-envelope me-2"></i>Email
+                            </label>
+                            <input type="email" class="form-control" id="email" name="email" required
+                                   placeholder="your.email@snsx.com">
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="name" class="form-label">
+                                <i class="fas fa-id-card me-2"></i>Full Name
+                            </label>
+                            <input type="text" class="form-control" id="name" name="name" required
+                                   placeholder="Your full name">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="phone" class="form-label">
+                                <i class="fas fa-phone me-2"></i>Phone (Optional)
+                            </label>
+                            <input type="tel" class="form-control" id="phone" name="phone"
+                                   placeholder="+1 234 567 8900">
+                        </div>
+                    </div>
+                    
+                    <hr class="my-4">
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="password" class="form-label">
+                                <i class="fas fa-lock me-2"></i>Password
+                            </label>
+                            <input type="password" class="form-control" id="password" name="password" required
+                                   placeholder="Create a strong password">
+                            <div id="password-strength" class="mt-2">
+                                <div class="progress" style="height: 5px;">
+                                    <div class="progress-bar" id="password-strength-bar" style="width: 0%"></div>
+                                </div>
+                                <small id="password-strength-text" class="text-muted"></small>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="confirm_password" class="form-label">
+                                <i class="fas fa-check-double me-2"></i>Confirm Password
+                            </label>
+                            <input type="password" class="form-control" id="confirm_password" name="confirm_password" required
+                                   placeholder="Confirm your password">
+                            <div id="password-match" class="mt-2 small"></div>
+                        </div>
+                    </div>
+                    
+                    <div id="password-strength-feedback" class="mb-3 small"></div>
+                    
+                    <hr class="my-4">
+                    
+                    <!-- Face Photo Upload -->
+                    <div class="mb-4">
+                        <label for="face_photo" class="form-label">
+                            <i class="fas fa-camera me-2"></i>Profile Photo
+                        </label>
+                        <div class="file-upload-wrapper p-4 text-center" style="border: 2px dashed rgba(0, 240, 255, 0.3); border-radius: 12px; cursor: pointer;">
+                            <input type="file" class="file-upload-input d-none" id="face_photo" name="face_photo" accept="image/*">
+                            <div class="file-preview">
+                                <i class="fas fa-cloud-upload-alt fa-3x text-primary mb-3"></i>
+                                <p class="text-secondary mb-0">Click or drag to upload your photo</p>
+                                <small class="text-muted">For biometric authentication (optional)</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="terms" required>
+                            <label class="form-check-label" for="terms">
+                                I agree to the <a href="#" class="text-primary">Terms of Service</a> and 
+                                <a href="#" class="text-primary">Privacy Policy</a>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid mb-4">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-rocket me-2"></i>
+                            Create Account
+                        </button>
+                    </div>
+                </form>
+                
+                <hr class="my-4">
+                
+                <div class="text-center">
+                    <p class="text-secondary mb-3">Already have an account?</p>
+                    <a href="{{ url_for('auth.login') }}" class="btn btn-outline-primary">
+                        <i class="fas fa-sign-in-alt me-2"></i>
+                        Sign In
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Features List -->
+        <div class="card mt-4 fade-in">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-star me-2"></i>
+                    What You Get
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-envelope fa-lg text-primary me-3"></i>
+                            <div>
+                                <strong>Secure Email</strong>
+                                <p class="text-secondary small mb-0">End-to-end encrypted messaging</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-shield-alt fa-lg text-success me-3"></i>
+                            <div>
+                                <strong>Secure Vault</strong>
+                                <p class="text-secondary small mb-0">Store sensitive data safely</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-tasks fa-lg text-info me-3"></i>
+                            <div>
+                                <strong>Task Manager</strong>
+                                <p class="text-secondary small mb-0">Organize your workflow</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-chart-line fa-lg text-warning me-3"></i>
+                            <div>
+                                <strong>Analytics</strong>
+                                <p class="text-secondary small mb-0">Track your productivity</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// File upload trigger
+document.querySelector('.file-upload-wrapper').addEventListener('click', function() {
+    document.getElementById('face_photo').click();
+});
+
+// File preview
+document.getElementById('face_photo').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const preview = document.querySelector('.file-preview');
+            preview.innerHTML = `
+                <img src="${e.target.result}" alt="Preview" class="rounded-circle mb-2" style="width: 100px; height: 100px; object-fit: cover; border: 3px solid var(--accent-primary);">
+                <p class="text-success small mb-0"><i class="fas fa-check me-1"></i>Photo uploaded</p>
+            `;
+        };
+        reader.readAsDataURL(file);
+    }
+});
+
+// Password strength checker
+const passwordInput = document.getElementById('password');
+const confirmPasswordInput = document.getElementById('confirm_password');
+
+passwordInput.addEventListener('input', function() {
+    const strength = SNSMail.checkPasswordStrength(this.value);
+    SNSMail.updatePasswordStrength(strength);
+});
+
+confirmPasswordInput.addEventListener('input', function() {
+    SNSMail.updatePasswordMatch(this.value === passwordInput.value);
+});
+
+// Auto-focus username field
+document.getElementById('username').focus();
+</script>
+{% endblock %}

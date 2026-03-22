@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+{% block title %}Two-Factor Authentication Setup - SNS Mail{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h2 class="mb-4">
+            <i class="fas fa-shield-alt text-success"></i>
+            Two-Factor Authentication Setup
+        </h2>
+    </div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Set Up Authenticator App</h5>
+            </div>
+            <div class="card-body text-center">
+                <p class="mb-3">Scan this QR code with your authenticator app (Google Authenticator, Authy, etc.)</p>
+                
+                {% if qr_code %}
+                <div class="mb-3">
+                    <img src="data:image/png;base64,{{ qr_code }}" alt="2FA QR Code" class="img-fluid">
+                </div>
+                {% endif %}
+                
+                <div class="alert alert-info">
+                    <strong>Secret Key:</strong> <code>{{ secret }}</code>
+                    <br>
+                    <small>Enter this code manually if you can't scan the QR code</small>
+                </div>
+                
+                <hr>
+                
+                <form method="POST" action="{{ url_for('auth.enable_2fa') }}">
+                    <div class="mb-3">
+                        <label for="totp_code" class="form-label">Enter Verification Code</label>
+                        <input type="text" class="form-control text-center" id="totp_code" name="totp_code" 
+                               placeholder="000000" maxlength="6" required
+                               style="font-size: 1.5rem; letter-spacing: 0.5rem;">
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-check"></i> Verify & Enable 2FA
+                        </button>
+                        <a href="{{ url_for('client.dashboard') }}" class="btn btn-secondary">
+                            Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div class="card mt-3">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-info-circle"></i> Instructions</h5>
+            </div>
+            <div class="card-body">
+                <ol>
+                    <li>Download an authenticator app (Google Authenticator, Authy, or Microsoft Authenticator)</li>
+                    <li>Scan the QR code above or enter the secret key manually</li>
+                    <li>Enter the 6-digit code from your authenticator app</li>
+                    <li>Click "Verify & Enable 2FA" to complete setup</li>
+                </ol>
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <strong>Important:</strong> Save your secret key in a safe place. You'll need it to recover your account if you lose access to your authenticator app.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
