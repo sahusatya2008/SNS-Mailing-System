@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}SNS Mail{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+    {% block extra_css %}{% endblock %}
+    {% block head %}{% endblock %}
+</head>
+<body>
+    <!-- Splash Screen -->
+    <div class="splash-screen" id="splashScreen">
+        <div class="splash-content">
+            <div class="splash-logo">
+                <i class="fas fa-envelope"></i>
+            </div>
+            <div class="splash-title">SNS MAIL</div>
+            <div class="splash-subtitle">Secure Communication Platform</div>
+            <div class="splash-loader">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Parallax Background Container -->
+    <div class="parallax-container">
+        <div class="parallax-grid"></div>
+        <div class="parallax-orb orb-1"></div>
+        <div class="parallax-orb orb-2"></div>
+        <div class="parallax-orb orb-3"></div>
+        <div class="parallax-orb orb-4"></div>
+    </div>
+
+    <!-- Curvy Wave Background -->
+    <div class="wave-container">
+        <div class="wave"></div>
+        <div class="wave"></div>
+        <div class="wave"></div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark" id="mainNavbar">
+        <div class="container">
+            <a class="navbar-brand" href="{{ url_for('auth.index') }}">
+                <i class="fas fa-envelope icon-animated"></i> 
+                <span>SNS Mail</span>
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    {% if current_user.is_authenticated %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('client.dashboard') }}">
+                                <i class="fas fa-tachometer-alt"></i> Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                                <i class="fas fa-envelope"></i> Mail
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="{{ url_for('client.inbox') }}">
+                                    <i class="fas fa-inbox"></i> Inbox</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('client.sent') }}">
+                                    <i class="fas fa-paper-plane"></i> Sent</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('client.drafts') }}">
+                                    <i class="fas fa-file-alt"></i> Drafts</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="{{ url_for('client.compose') }}">
+                                    <i class="fas fa-plus-circle"></i> Compose</a></li>
+                            </ul>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                                <i class="fas fa-magic"></i> Features
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="{{ url_for('features.tasks') }}">
+                                    <i class="fas fa-tasks"></i> Tasks</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('features.vault') }}">
+                                    <i class="fas fa-shield-alt"></i> Secure Vault</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('features.focus_mode') }}">
+                                    <i class="fas fa-brain"></i> Focus Mode</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('features.scheduled_emails') }}">
+                                    <i class="fas fa-clock"></i> Scheduled Emails</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('features.reminders') }}">
+                                    <i class="fas fa-bell"></i> Reminders</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="{{ url_for('features.templates') }}">
+                                    <i class="fas fa-file-alt"></i> Templates</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('features.analytics') }}">
+                                    <i class="fas fa-chart-line"></i> Analytics</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('features.bookmarks') }}">
+                                    <i class="fas fa-bookmark"></i> Bookmarks</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('features.mood_tracking') }}">
+                                    <i class="fas fa-heart"></i> Mood Tracking</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('features.calendar') }}">
+                                    <i class="fas fa-calendar-alt"></i> Calendar</a></li>
+                            </ul>
+                        </li>
+                        {% if current_user.is_admin or current_user.is_server_admin %}
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                                    <i class="fas fa-users-cog"></i> Admin
+                                </a>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" href="{{ url_for('admin.dashboard') }}">
+                                        <i class="fas fa-chart-pie"></i> Admin Dashboard</a></li>
+                                    <li><a class="dropdown-item" href="{{ url_for('admin.users') }}">
+                                        <i class="fas fa-users"></i> Users</a></li>
+                                    <li><a class="dropdown-item" href="{{ url_for('admin.emails') }}">
+                                        <i class="fas fa-envelope-open-text"></i> Emails</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item" href="{{ url_for('admin.security_logs') }}">
+                                        <i class="fas fa-shield-alt"></i> Security Logs</a></li>
+                                    <li><a class="dropdown-item" href="{{ url_for('admin.reports') }}">
+                                        <i class="fas fa-file-chart-line"></i> Reports</a></li>
+                                </ul>
+                            </li>
+                        {% endif %}
+                        {% if current_user.is_server_admin %}
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                                    <i class="fas fa-server"></i> Server
+                                </a>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" href="{{ url_for('server.dashboard') }}">
+                                        <i class="fas fa-chart-line"></i> Server Dashboard</a></li>
+                                    <li><a class="dropdown-item" href="{{ url_for('server.user_management') }}">
+                                        <i class="fas fa-user-cog"></i> User Management</a></li>
+                                    <li><a class="dropdown-item" href="{{ url_for('server.email_management') }}">
+                                        <i class="fas fa-mail-bulk"></i> Email Management</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item" href="{{ url_for('server.monitoring') }}">
+                                        <i class="fas fa-desktop"></i> Monitoring</a></li>
+                                    <li><a class="dropdown-item" href="{{ url_for('server.system_maintenance') }}">
+                                        <i class="fas fa-tools"></i> Maintenance</a></li>
+                                    <li><a class="dropdown-item" href="{{ url_for('server.backup_restore') }}">
+                                        <i class="fas fa-database"></i> Backup & Restore</a></li>
+                                </ul>
+                            </li>
+                        {% endif %}
+                    {% endif %}
+                </ul>
+                
+                <ul class="navbar-nav d-flex align-items-center">
+                    <!-- Theme Toggle Button -->
+                    <li class="nav-item">
+                        <button class="theme-toggle" id="themeToggle" title="Toggle Theme">
+                            <i class="fas fa-moon" id="themeIcon"></i>
+                        </button>
+                    </li>
+                    
+                    {% if current_user.is_authenticated %}
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                                <i class="fas fa-user-circle"></i> 
+                                <span class="verified-name">
+                                    {{ current_user.username }}
+                                    {% if current_user.is_verified %}
+                                        <span class="verified-badge verified-badge-sm" data-tooltip="Verified User">
+                                            <i class="fas fa-check"></i>
+                                        </span>
+                                    {% endif %}
+                                </span>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item" href="{{ url_for('client.profile') }}">
+                                    <i class="fas fa-user-circle"></i> Profile
+                                </a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('client.notes') }}">
+                                    <i class="fas fa-sticky-note"></i> Notes
+                                </a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="{{ url_for('client.my_qr_code') }}">
+                                    <i class="fas fa-qrcode"></i> My QR Code
+                                </a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('client.qr_scan') }}">
+                                    <i class="fas fa-camera"></i> Scan QR Code
+                                </a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item text-danger" href="{{ url_for('auth.logout') }}">
+                                    <i class="fas fa-sign-out-alt"></i> Logout
+                                </a></li>
+                            </ul>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('auth.login') }}">
+                                <i class="fas fa-sign-in-alt"></i> Login
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('auth.register') }}">
+                                <i class="fas fa-user-plus"></i> Register
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Flash Messages -->
+    <div class="container mt-3">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show fade-in" role="alert">
+                        <i class="fas fa-{% if category == 'success' %}check-circle{% elif category == 'danger' or category == 'error' %}exclamation-circle{% elif category == 'warning' %}exclamation-triangle{% else %}info-circle{% endif %}"></i>
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <!-- Main Content -->
+    <main class="container mt-4">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="text-light mt-5 py-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-4 mb-4">
+                    <h5><i class="fas fa-envelope me-2 icon-pulse"></i>SNS Mail</h5>
+                    <p class="mt-3">Secure, Next-Generation Email Platform with advanced AI-powered features, biometric authentication, and futuristic design.</p>
+                    <div class="mt-3">
+                        <a href="#" class="text-secondary me-3"><i class="fab fa-twitter fa-lg icon-animated"></i></a>
+                        <a href="#" class="text-secondary me-3"><i class="fab fa-github fa-lg icon-animated"></i></a>
+                        <a href="#" class="text-secondary me-3"><i class="fab fa-linkedin fa-lg icon-animated"></i></a>
+                    </div>
+                </div>
+                <div class="col-lg-2 col-md-4 mb-4">
+                    <h5>Quick Links</h5>
+                    <ul class="list-unstyled mt-3">
+                        <li><a href="{{ url_for('client.inbox') }}" class="text-secondary"><i class="fas fa-chevron-right me-2"></i>Inbox</a></li>
+                        <li><a href="{{ url_for('client.compose') }}" class="text-secondary"><i class="fas fa-chevron-right me-2"></i>Compose</a></li>
+                        <li><a href="{{ url_for('features.tasks') }}" class="text-secondary"><i class="fas fa-chevron-right me-2"></i>Tasks</a></li>
+                        <li><a href="{{ url_for('features.vault') }}" class="text-secondary"><i class="fas fa-chevron-right me-2"></i>Vault</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-2 col-md-4 mb-4">
+                    <h5>Features</h5>
+                    <ul class="list-unstyled mt-3">
+                        <li><a href="{{ url_for('features.focus_mode') }}" class="text-secondary"><i class="fas fa-chevron-right me-2"></i>Focus Mode</a></li>
+                        <li><a href="{{ url_for('features.analytics') }}" class="text-secondary"><i class="fas fa-chevron-right me-2"></i>Analytics</a></li>
+                        <li><a href="{{ url_for('features.templates') }}" class="text-secondary"><i class="fas fa-chevron-right me-2"></i>Templates</a></li>
+                        <li><a href="{{ url_for('features.reminders') }}" class="text-secondary"><i class="fas fa-chevron-right me-2"></i>Reminders</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-4 col-md-4 mb-4">
+                    <h5>System Status</h5>
+                    <div class="mt-3">
+                        <div class="d-flex align-items-center mb-2">
+                            <span class="badge bg-success me-2"><i class="fas fa-check icon-pulse"></i></span>
+                            <span class="text-secondary">All Systems Operational</span>
+                        </div>
+                        <div class="d-flex align-items-center mb-2">
+                            <span class="badge bg-primary me-2"><i class="fas fa-shield-alt icon-pulse"></i></span>
+                            <span class="text-secondary">Security Level: Maximum</span>
+                        </div>
+                        <div class="d-flex align-items-center">
+                            <span class="badge bg-info me-2"><i class="fas fa-server icon-pulse"></i></span>
+                            <span class="text-secondary">Domain: @snsx.com</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <hr>
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <p class="mb-0 text-secondary">
+                        <i class="fas fa-copyright"></i> 2026 SNS Mail. All rights reserved.
+                    </p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <p class="mb-0 text-secondary">
+                        <i class="fas fa-code"></i> Powered by Advanced AI Technology
+                    </p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Notification Container -->
+    <div id="notification-container"></div>
+    
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    
+    <!-- Global Notification System -->
+    <script>
+    // Track seen emails to avoid duplicate notifications
+    let seenEmailIds = new Set();
+    let sessionStartTime = Date.now();
+    
+    function showNotification(type, title, message, duration = 5000, onClickUrl = null) {
+        const container = document.getElementById('notification-container');
+        
+        const icons = {
+            'success': 'fa-check-circle',
+            'error': 'fa-exclamation-circle',
+            'warning': 'fa-exclamation-triangle',
+            'info': 'fa-info-circle',
+            'email': 'fa-envelope',
+            'reminder': 'fa-bell'
+        };
+        
+        const colors = {
+            'success': 'success',
+            'error': 'danger',
+            'warning': 'warning',
+            'info': 'info',
+            'email': 'primary',
+            'reminder': 'secondary'
+        };
+        
+        const notificationId = 'notif-' + Date.now();
+        
+        const notification = document.createElement('div');
+        notification.id = notificationId;
+        notification.className = `alert alert-${colors[type] || 'info'} alert-dismissible fade show mb-2`;
+        notification.style.cssText = 'box-shadow: 0 4px 12px rgba(0,0,0,0.15); animation: slideIn 0.3s ease-out; cursor: pointer;';
+        notification.innerHTML = `
+            <div class="d-flex align-items-start">
+                <i class="fas ${icons[type] || 'fa-info-circle'} me-2 mt-1"></i>
+                <div class="flex-grow-1">
+                    <strong>${title}</strong>
+                    <p class="mb-0 small">${message}</p>
+                </div>
+                <button type="button" class="btn-close" onclick="event.stopPropagation(); closeNotification('${notificationId}')" aria-label="Close"></button>
+            </div>
+        `;
+        
+        // Add click handler for redirection
+        if (onClickUrl) {
+            notification.addEventListener('click', function() {
+                closeNotification(notificationId);
+                window.location.href = onClickUrl;
+            });
+        }
+        
+        container.appendChild(notification);
+        
+        // Auto-remove after duration
+        if (duration > 0) {
+            setTimeout(() => {
+                closeNotification(notificationId);
+            }, duration);
+        }
+        
+        return notificationId;
+    }
+    
+    function closeNotification(notificationId) {
+        const notification = document.getElementById(notificationId);
+        if (notification) {
+            notification.classList.remove('show');
+            notification.classList.add('fade');
+            setTimeout(() => {
+                notification.remove();
+            }, 300);
+        }
+    }
+    
+    // Check for new emails periodically (only for authenticated users)
+    {% if current_user.is_authenticated %}
+    function checkForNewEmails() {
+        fetch('/check-new-emails', {
+            credentials: 'same-origin'
+        })
+        .then(response => response.json())
+        .then(data => {
+            // Only show notifications for emails that arrived after session started
+            if (data.new_emails && data.new_emails.length > 0) {
+                data.new_emails.forEach(email => {
+                    // Check if this email is new (not seen before and arrived after session start)
+                    if (!seenEmailIds.has(email.id) && email.sent_at * 1000 > sessionStartTime) {
+                        seenEmailIds.add(email.id);
+                        showNotification(
+                            'email', 
+                            'New Email Received', 
+                            `From: ${email.sender} - ${email.subject}`,
+                            8000,
+                            `/email/${email.id}`
+                        );
+                    }
+                });
+            }
+            
+            // Check for reminders
+            if (data.upcoming_reminders && data.upcoming_reminders > 0) {
+                showNotification('reminder', 'Upcoming Reminders', `You have ${data.upcoming_reminders} reminder(s) due soon.`, 5000, '/features/reminders');
+            }
+        })
+        .catch(error => console.log('Notification check failed:', error));
+    }
+    
+    // Initialize seen emails on page load
+    function initializeSeenEmails() {
+        fetch('/check-new-emails', {
+            credentials: 'same-origin'
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.new_emails) {
+                data.new_emails.forEach(email => {
+                    seenEmailIds.add(email.id);
+                });
+            }
+        })
+        .catch(error => console.log('Failed to initialize seen emails:', error));
+    }
+    
+    // Start notification checking when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        initializeSeenEmails();
+        setInterval(checkForNewEmails, 30000); // Check every 30 seconds
+    });
+    {% endif %}
+    </script>
+    
+    {% block scripts %}{% endblock %}
+</body>
+</html>
