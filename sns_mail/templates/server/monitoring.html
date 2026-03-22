@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block title %}Monitoring - SNS Mail{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h2 class="mb-4">
+            <i class="fas fa-chart-line text-primary"></i>
+            System Monitoring
+        </h2>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-4 mb-4">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="mb-0">Logs</h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted">View system and security logs.</p>
+                <a href="{{ url_for('server.monitoring_logs') }}" class="btn btn-primary">
+                    <i class="fas fa-list"></i> View Logs
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4 mb-4">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="mb-0">Performance</h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted">View system performance metrics.</p>
+                <a href="{{ url_for('server.monitoring_performance') }}" class="btn btn-info">
+                    <i class="fas fa-tachometer-alt"></i> View Performance
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4 mb-4">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="mb-0">Alerts</h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted">View system alerts and warnings.</p>
+                <a href="{{ url_for('server.monitoring_alerts') }}" class="btn btn-warning">
+                    <i class="fas fa-bell"></i> View Alerts
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

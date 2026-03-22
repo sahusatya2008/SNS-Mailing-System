@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}Server Status - SNS Mail{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h2 class="mb-4">
+            <i class="fas fa-server text-primary"></i>
+            Server Status
+        </h2>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card bg-success text-white">
+            <div class="card-body text-center">
+                <h4><i class="fas fa-check-circle"></i></h4>
+                <small>Server Status</small>
+                <p class="mb-0">Online</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body text-center">
+                <h4>-</h4>
+                <small>Uptime</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-info text-white">
+            <div class="card-body text-center">
+                <h4>-</h4>
+                <small>Database</small>
+                <p class="mb-0">Connected</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-warning text-white">
+            <div class="card-body text-center">
+                <h4>-</h4>
+                <small>Active Sessions</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">System Information</h5>
+    </div>
+    <div class="card-body">
+        <p><strong>Server:</strong> SNS Mail Server</p>
+        <p><strong>Database:</strong> SQLite</p>
+        <p><strong>Status:</strong> <span class="badge bg-success">Running</span></p>
+    </div>
+</div>
+{% endblock %}

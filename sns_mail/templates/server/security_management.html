@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block title %}Security Management - SNS Mail{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h2 class="mb-4">
+            <i class="fas fa-shield-alt text-primary"></i>
+            Security Management
+        </h2>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Action</th>
+                        <th>User ID</th>
+                        <th>IP Address</th>
+                        <th>Details</th>
+                        <th>Timestamp</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in logs.items %}
+                        <tr>
+                            <td>{{ log.id }}</td>
+                            <td>
+                                <span class="badge 
+                                    {% if 'SUCCESS' in log.action %}bg-success
+                                    {% elif 'FAILED' in log.action %}bg-danger
+                                    {% elif 'BANNED' in log.action %}bg-warning
+                                    {% else %}bg-info{% endif %}">
+                                    {{ log.action }}
+                                </span>
+                            </td>
+                            <td>{{ log.user_id if log.user_id else 'N/A' }}</td>
+                            <td>{{ log.ip_address if log.ip_address else 'N/A' }}</td>
+                            <td>
+                                {% if log.details %}
+                                    <small>{{ log.details[:50] }}{% if log.details|length > 50 %}...{% endif %}</small>
+                                {% else %}
+                                    <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ log.timestamp.strftime('%Y-%m-%d %H:%M:%S') if log.timestamp else 'N/A' }}</td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="6" class="text-center">No security logs found</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        {% if logs.pages > 1 %}
+            <nav>
+                <ul class="pagination justify-content-center">
+                    {% if logs.has_prev %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('server.security_management', page=logs.prev_num) }}">Previous</a>
+                        </li>
+                    {% endif %}
+                    {% for page_num in logs.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+                        {% if page_num %}
+                            <li class="page-item {% if page_num == logs.page %}active{% endif %}">
+                                <a class="page-link" href="{{ url_for('server.security_management', page=page_num) }}">{{ page_num }}</a>
+                            </li>
+                        {% else %}
+                            <li class="page-item disabled"><span class="page-link">...</span></li>
+                        {% endif %}
+                    {% endfor %}
+                    {% if logs.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('server.security_management', page=logs.next_num) }}">Next</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block title %}User Server Actions - SNS Mail{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h2 class="mb-4">
+            <i class="fas fa-user-cog text-primary"></i>
+            User Server Actions: 
+            <span class="verified-name">
+                {{ user.username }}
+                {% if user.is_verified %}
+                    <span class="verified-badge" data-tooltip="Verified User">
+                        <i class="fas fa-check"></i>
+                    </span>
+                {% endif %}
+            </span>
+        </h2>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">User Info</h5>
+            </div>
+            <div class="card-body">
+                <p><strong>ID:</strong> {{ user.id }}</p>
+                <p><strong>Username:</strong> {{ user.username }}</p>
+                <p><strong>Email:</strong> {{ user.email }}</p>
+                <p><strong>Login Attempts:</strong> {{ user.login_attempts }}</p>
+                <p><strong>Locked Until:</strong> {{ user.locked_until.strftime('%Y-%m-%d %H:%M') if user.locked_until else 'Not locked' }}</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-8">
+        <div class="card mb-3">
+            <div class="card-header">
+                <h5 class="mb-0">Reset Password</h5>
+            </div>
+            <div class="card-body">
+                <form action="{{ url_for('server.reset_user_password', user_id=user.id) }}" method="POST">
+                    <div class="input-group">
+                        <input type="password" name="new_password" class="form-control" placeholder="New password (min 8 chars, uppercase, lowercase, numbers)" required>
+                        <button type="submit" class="btn btn-warning">Reset Password</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div class="card mb-3">
+            <div class="card-header">
+                <h5 class="mb-0">Session Management</h5>
+            </div>
+            <div class="card-body">
+                <form action="{{ url_for('server.force_user_logout', user_id=user.id) }}" method="POST" style="display: inline;">
+                    <button type="submit" class="btn btn-danger" onclick="return confirm('Force logout this user?')">
+                        <i class="fas fa-sign-out-alt"></i> Force Logout
+                    </button>
+                </form>
+            </div>
+        </div>
+        
+        <div class="card mb-3">
+            <div class="card-header">
+                <h5 class="mb-0">Login Attempts</h5>
+            </div>
+            <div class="card-body">
+                <p>Current attempts: {{ user.login_attempts }}</p>
+                <form action="{{ url_for('server.clear_login_attempts', user_id=user.id) }}" method="POST">
+                    <button type="submit" class="btn btn-info">
+                        <i class="fas fa-redo"></i> Clear Login Attempts
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="mt-3">
+    <a href="{{ url_for('server.user_management') }}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Back to User Management
+    </a>
+</div>
+{% endblock %}

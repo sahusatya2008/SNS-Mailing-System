@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block title %}Monitoring Alerts - SNS Mail{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h2 class="mb-4">
+            <i class="fas fa-bell text-primary"></i>
+            Monitoring Alerts
+        </h2>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Alert Type</th>
+                        <th>User ID</th>
+                        <th>IP Address</th>
+                        <th>Details</th>
+                        <th>Timestamp</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for alert in alerts %}
+                        <tr>
+                            <td>{{ alert.id }}</td>
+                            <td>
+                                <span class="badge 
+                                    {% if 'FAILED' in alert.action %}bg-danger
+                                    {% elif 'BANNED' in alert.action %}bg-warning
+                                    {% elif 'VIRUS' in alert.action %}bg-danger
+                                    {% else %}bg-info{% endif %}">
+                                    {{ alert.action }}
+                                </span>
+                            </td>
+                            <td>{{ alert.user_id if alert.user_id else 'N/A' }}</td>
+                            <td>{{ alert.ip_address if alert.ip_address else 'N/A' }}</td>
+                            <td>
+                                {% if alert.details %}
+                                    <small>{{ alert.details[:50] }}{% if alert.details|length > 50 %}...{% endif %}</small>
+                                {% else %}
+                                    <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ alert.timestamp.strftime('%Y-%m-%d %H:%M:%S') if alert.timestamp else 'N/A' }}</td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="6" class="text-center">No alerts found</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
