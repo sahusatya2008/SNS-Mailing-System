@@ -1,0 +1,717 @@
+{% extends "base.html" %}
+
+{% block title %}Calendar & Events - SNS Mail{% endblock %}
+
+{% block extra_css %}
+<style>
+.calendar-container {
+    background: var(--bg-card);
+    border-radius: 20px;
+    padding: 20px;
+    border: 1px solid var(--border-color);
+}
+.calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+.calendar-nav-btn {
+    background: rgba(0, 212, 255, 0.1);
+    border: 1px solid rgba(0, 212, 255, 0.3);
+    color: var(--cyan);
+    padding: 8px 16px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+.calendar-nav-btn:hover {
+    background: rgba(0, 212, 255, 0.2);
+    transform: translateY(-2px);
+}
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 5px;
+}
+.calendar-day-header {
+    text-align: center;
+    padding: 10px;
+    font-weight: 600;
+    color: var(--cyan);
+    font-size: 0.85rem;
+    text-transform: uppercase;
+}
+.calendar-day {
+    min-height: 100px;
+    background: rgba(10, 10, 20, 0.5);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 8px;
+    transition: all 0.3s;
+}
+.calendar-day:hover {
+    background: rgba(0, 212, 255, 0.05);
+    border-color: rgba(0, 212, 255, 0.3);
+}
+.calendar-day.today {
+    background: rgba(0, 212, 255, 0.1);
+    border-color: var(--cyan);
+}
+.calendar-day.other-month {
+    opacity: 0.4;
+}
+.day-number {
+    font-weight: 600;
+    font-size: 0.9rem;
+    margin-bottom: 5px;
+    color: var(--text-light);
+}
+.today .day-number {
+    background: var(--gradient-main);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+.event-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 3px;
+}
+.event-item {
+    font-size: 0.75rem;
+    padding: 3px 6px;
+    border-radius: 5px;
+    margin-bottom: 3px;
+    cursor: pointer;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    transition: all 0.2s;
+}
+.event-item:hover {
+    transform: translateX(3px);
+}
+.event-event { background: rgba(0, 212, 255, 0.2); color: #00d4ff; }
+.event-meeting { background: rgba(139, 92, 246, 0.2); color: #8b5cf6; }
+.event-reminder { background: rgba(245, 158, 11, 0.2); color: #f59e0b; }
+.event-task { background: rgba(16, 185, 129, 0.2); color: #10b981; }
+.sidebar-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 15px;
+    padding: 15px;
+    margin-bottom: 15px;
+}
+.sidebar-card h5 {
+    color: var(--cyan);
+    font-size: 0.9rem;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.upcoming-item {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    background: rgba(10, 10, 20, 0.5);
+    border-radius: 10px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: all 0.3s;
+    text-decoration: none;
+    color: inherit;
+}
+.upcoming-item:hover {
+    background: rgba(0, 212, 255, 0.1);
+    transform: translateX(5px);
+}
+.upcoming-time {
+    text-align: center;
+    min-width: 50px;
+    margin-right: 12px;
+}
+.upcoming-time .time {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--cyan);
+}
+.upcoming-time .date {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+}
+.upcoming-details h6 {
+    font-size: 0.85rem;
+    margin-bottom: 3px;
+    color: var(--text-light);
+}
+.upcoming-details small {
+    color: var(--text-muted);
+}
+.timer-badge {
+    font-size: 0.7rem;
+    padding: 2px 8px;
+    border-radius: 10px;
+    background: rgba(239, 68, 68, 0.2);
+    color: #ef4444;
+}
+.timer-badge.soon {
+    background: rgba(245, 158, 11, 0.2);
+    color: #f59e0b;
+}
+.timer-badge.later {
+    background: rgba(16, 185, 129, 0.2);
+    color: #10b981;
+}
+.stat-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 15px;
+    padding: 20px;
+    text-align: center;
+    transition: all 0.3s;
+}
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+.stat-card i {
+    font-size: 2rem;
+    margin-bottom: 10px;
+}
+.stat-card h3 {
+    font-size: 2rem;
+    margin-bottom: 5px;
+    background: var(--gradient-main);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+.stat-card p {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+}
+/* Schedule popup styles */
+.schedule-popup {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
+    padding: 30px;
+    z-index: 10000;
+    max-width: 500px;
+    width: 90%;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5);
+}
+.schedule-popup-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.7);
+    z-index: 9999;
+}
+.running-timer {
+    font-family: 'Orbitron', monospace;
+    font-size: 1.2rem;
+    color: var(--cyan);
+    text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h2 class="mb-2">
+            <i class="fas fa-calendar-alt text-primary"></i>
+            Calendar & Events
+        </h2>
+        <p class="text-muted mb-4">Manage your schedules, meetings, and reminders</p>
+    </div>
+</div>
+
+<!-- Stats Row -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="stat-card">
+            <i class="fas fa-calendar-check text-primary"></i>
+            <h3>{{ total_events }}</h3>
+            <p>Total Events</p>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <i class="fas fa-users text-info"></i>
+            <h3>{{ total_meetings }}</h3>
+            <p>Meetings</p>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <i class="fas fa-clock text-warning"></i>
+            <h3>{{ today_events|length }}</h3>
+            <p>Today's Events</p>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <i class="fas fa-bell text-danger"></i>
+            <h3>{{ upcoming_events|length }}</h3>
+            <p>Upcoming</p>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Calendar -->
+    <div class="col-lg-8">
+        <div class="calendar-container">
+            <div class="calendar-header">
+                <button class="calendar-nav-btn" onclick="changeMonth(-1)">
+                    <i class="fas fa-chevron-left"></i> Previous
+                </button>
+                <h4 id="currentMonth" class="mb-0" style="color: var(--cyan);">{{ today.strftime('%B %Y') }}</h4>
+                <button class="calendar-nav-btn" onclick="changeMonth(1)">
+                    Next <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+            
+            <div class="calendar-grid">
+                <div class="calendar-day-header">Sun</div>
+                <div class="calendar-day-header">Mon</div>
+                <div class="calendar-day-header">Tue</div>
+                <div class="calendar-day-header">Wed</div>
+                <div class="calendar-day-header">Thu</div>
+                <div class="calendar-day-header">Fri</div>
+                <div class="calendar-day-header">Sat</div>
+            </div>
+            
+            <div class="calendar-grid" id="calendarDays">
+                <!-- Calendar days will be generated by JavaScript -->
+            </div>
+        </div>
+        
+        <!-- Today's Schedule -->
+        <div class="card mt-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-sun text-warning me-2"></i>Today's Schedule</h5>
+                <span class="badge bg-primary" id="todayDate">{{ today.strftime('%A, %B %d') }}</span>
+            </div>
+            <div class="card-body" id="todaySchedule">
+                {% if today_events %}
+                    {% for event in today_events %}
+                    <div class="upcoming-item" onclick="window.location.href='/features/calendar/event/{{ event.id }}'">
+                        <div class="upcoming-time">
+                            <div class="time">{{ event.start_time.strftime('%H:%M') }}</div>
+                        </div>
+                        <div class="upcoming-details flex-grow-1">
+                            <h6>{{ event.title }}</h6>
+                            <small>
+                                {% if event.is_meeting %}
+                                    <i class="fas fa-video me-1"></i> Meeting
+                                {% endif %}
+                                {% if event.location %}
+                                    <i class="fas fa-map-marker-alt me-1"></i> {{ event.location }}
+                                {% endif %}
+                            </small>
+                        </div>
+                        <div class="running-timer" id="timer-{{ event.id }}" data-start="{{ event.start_time.isoformat() }}">
+                            --:--:--
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center py-4 text-muted">
+                        <i class="fas fa-calendar-day fa-3x mb-3"></i>
+                        <p>No events scheduled for today</p>
+                        <a href="{{ url_for('features.create_event') }}" class="btn btn-primary btn-sm">
+                            <i class="fas fa-plus me-1"></i> Add Event
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Sidebar -->
+    <div class="col-lg-4">
+        <!-- Quick Actions -->
+        <div class="sidebar-card">
+            <h5><i class="fas fa-bolt"></i> Quick Actions</h5>
+            <div class="d-grid gap-2">
+                <a href="{{ url_for('features.create_event') }}" class="btn btn-primary">
+                    <i class="fas fa-plus me-2"></i>Create Event
+                </a>
+                <a href="{{ url_for('features.create_event', is_meeting=1) }}" class="btn btn-info">
+                    <i class="fas fa-video me-2"></i>Schedule Meeting
+                </a>
+                <a href="{{ url_for('features.reminders') }}" class="btn btn-warning">
+                    <i class="fas fa-bell me-2"></i>View Reminders
+                </a>
+            </div>
+        </div>
+        
+        <!-- Upcoming Events -->
+        <div class="sidebar-card">
+            <h5><i class="fas fa-clock"></i> Upcoming Events</h5>
+            {% if upcoming_events %}
+                {% for event in upcoming_events[:5] %}
+                <a href="{{ url_for('features.view_event', event_id=event.id) }}" class="upcoming-item">
+                    <div class="upcoming-time">
+                        <div class="time">{{ event.start_time.strftime('%H:%M') }}</div>
+                        <div class="date">{{ event.start_time.strftime('%m/%d') }}</div>
+                    </div>
+                    <div class="upcoming-details flex-grow-1">
+                        <h6>{{ event.title }}</h6>
+                        <small>
+                            {% if event.is_meeting %}
+                                <i class="fas fa-video me-1"></i>
+                            {% endif %}
+                            {{ event.event_type|title }}
+                        </small>
+                    </div>
+                    <span class="timer-badge later">
+                        <i class="fas fa-clock me-1"></i>
+                        <span class="countdown" data-start="{{ event.start_time.isoformat() }}">--:--</span>
+                    </span>
+                </a>
+                {% endfor %}
+            {% else %}
+                <p class="text-muted text-center">No upcoming events</p>
+            {% endif %}
+        </div>
+        
+        <!-- Upcoming Meetings -->
+        <div class="sidebar-card">
+            <h5><i class="fas fa-video"></i> Upcoming Meetings</h5>
+            {% if upcoming_meetings %}
+                {% for meeting in upcoming_meetings %}
+                <a href="{{ url_for('features.view_event', event_id=meeting.id) }}" class="upcoming-item">
+                    <div class="upcoming-time">
+                        <div class="time">{{ meeting.start_time.strftime('%H:%M') }}</div>
+                        <div class="date">{{ meeting.start_time.strftime('%m/%d') }}</div>
+                    </div>
+                    <div class="upcoming-details flex-grow-1">
+                        <h6>{{ meeting.title }}</h6>
+                        <small>
+                            {% if meeting.meeting_platform %}
+                                <i class="fab fa-{{ meeting.meeting_platform }} me-1"></i>
+                            {% endif %}
+                            {{ meeting.meeting_platform|title if meeting.meeting_platform else 'Meeting' }}
+                        </small>
+                    </div>
+                    {% if meeting.meeting_link %}
+                    <button class="btn btn-sm btn-success" onclick="event.stopPropagation(); window.open('{{ meeting.meeting_link }}', '_blank')">
+                        <i class="fas fa-external-link-alt"></i>
+                    </button>
+                    {% endif %}
+                </a>
+                {% endfor %}
+            {% else %}
+                <p class="text-muted text-center">No upcoming meetings</p>
+            {% endif %}
+        </div>
+        
+        <!-- Running Timers -->
+        <div class="sidebar-card">
+            <h5><i class="fas fa-stopwatch"></i> Live Timers</h5>
+            <div id="liveTimers">
+                <div class="text-center py-3 text-muted">
+                    <i class="fas fa-hourglass-half fa-2x mb-2"></i>
+                    <p class="small mb-0">Loading timers...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Schedule Popup (Hidden by default) -->
+<div id="schedulePopup" style="display: none;">
+    <div class="schedule-popup-overlay" onclick="closeSchedulePopup()"></div>
+    <div class="schedule-popup">
+        <div class="text-center mb-4">
+            <i class="fas fa-calendar-check fa-3x text-primary mb-3"></i>
+            <h4>Today's Schedule</h4>
+            <p class="text-muted">Click here to see your schedules</p>
+        </div>
+        <div id="popupContent"></div>
+        <div class="d-flex gap-2 mt-4">
+            <button class="btn btn-primary flex-grow-1" onclick="window.location.href='/features/calendar'">
+                <i class="fas fa-calendar me-1"></i> View Calendar
+            </button>
+            <button class="btn btn-secondary" onclick="closeSchedulePopup()">
+                Later
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Calendar state
+let currentDate = new Date('{{ today.strftime("%Y-%m-%d") }}');
+let currentMonth = currentDate.getMonth();
+let currentYear = currentDate.getFullYear();
+
+// Events data
+const events = {{ events | tojson }};
+
+// Initialize calendar
+function initCalendar() {
+    renderCalendar();
+    startTimers();
+    checkSchedulePopup();
+}
+
+// Render calendar
+function renderCalendar() {
+    const calendarDays = document.getElementById('calendarDays');
+    const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+                        'July', 'August', 'September', 'October', 'November', 'December'];
+    
+    document.getElementById('currentMonth').textContent = monthNames[currentMonth] + ' ' + currentYear;
+    
+    const firstDay = new Date(currentYear, currentMonth, 1);
+    const lastDay = new Date(currentYear, currentMonth + 1, 0);
+    const startingDay = firstDay.getDay();
+    const totalDays = lastDay.getDate();
+    
+    // Previous month days
+    const prevMonthLastDay = new Date(currentYear, currentMonth, 0).getDate();
+    
+    let html = '';
+    let dayCount = 1;
+    let nextMonthDay = 1;
+    
+    for (let i = 0; i < 42; i++) {
+        let dayNum;
+        let isOtherMonth = false;
+        let isToday = false;
+        
+        if (i < startingDay) {
+            dayNum = prevMonthLastDay - startingDay + i + 1;
+            isOtherMonth = true;
+        } else if (dayCount > totalDays) {
+            dayNum = nextMonthDay++;
+            isOtherMonth = true;
+        } else {
+            dayNum = dayCount++;
+            
+            // Check if today
+            const today = new Date();
+            if (dayNum === today.getDate() && currentMonth === today.getMonth() && currentYear === today.getFullYear()) {
+                isToday = true;
+            }
+        }
+        
+        const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(dayNum).padStart(2, '0')}`;
+        const dayEvents = events.filter(e => e.start_time && e.start_time.startsWith(dateStr));
+        
+        html += `
+            <div class="calendar-day ${isOtherMonth ? 'other-month' : ''} ${isToday ? 'today' : ''}" 
+                 onclick="openDay('${dateStr}')" data-date="${dateStr}">
+                <div class="day-number">${dayNum}</div>
+                ${dayEvents.slice(0, 3).map(e => `
+                    <div class="event-item event-${e.event_type}" onclick="event.stopPropagation(); viewEvent(${e.id})">
+                        ${e.title}
+                    </div>
+                `).join('')}
+                ${dayEvents.length > 3 ? `<small class="text-muted">+${dayEvents.length - 3} more</small>` : ''}
+            </div>
+        `;
+    }
+    
+    calendarDays.innerHTML = html;
+}
+
+// Change month
+function changeMonth(delta) {
+    currentMonth += delta;
+    if (currentMonth > 11) {
+        currentMonth = 0;
+        currentYear++;
+    } else if (currentMonth < 0) {
+        currentMonth = 11;
+        currentYear--;
+    }
+    renderCalendar();
+}
+
+// Open day
+function openDay(dateStr) {
+    window.location.href = `/features/calendar/create?start_time=${dateStr}T09:00`;
+}
+
+// View event
+function viewEvent(eventId) {
+    window.location.href = `/features/calendar/event/${eventId}`;
+}
+
+// Start timers
+function startTimers() {
+    // Update running timers every second
+    setInterval(updateTimers, 1000);
+    updateTimers();
+    
+    // Load live timers from API
+    loadLiveTimers();
+}
+
+// Update timers
+function updateTimers() {
+    document.querySelectorAll('.running-timer').forEach(timer => {
+        const startTime = new Date(timer.dataset.start);
+        const now = new Date();
+        const diff = startTime - now;
+        
+        if (diff > 0) {
+            const hours = Math.floor(diff / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+            timer.textContent = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        } else {
+            timer.textContent = 'NOW';
+            timer.style.color = '#ef4444';
+        }
+    });
+    
+    // Update countdowns
+    document.querySelectorAll('.countdown').forEach(countdown => {
+        const startTime = new Date(countdown.dataset.start);
+        const now = new Date();
+        const diff = startTime - now;
+        
+        if (diff > 0) {
+            const hours = Math.floor(diff / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            if (hours > 24) {
+                const days = Math.floor(hours / 24);
+                countdown.textContent = `${days}d ${hours % 24}h`;
+            } else {
+                countdown.textContent = `${hours}h ${minutes}m`;
+            }
+        } else {
+            countdown.textContent = 'Now';
+        }
+    });
+}
+
+// Load live timers
+function loadLiveTimers() {
+    fetch('/features/calendar/upcoming')
+        .then(response => response.json())
+        .then(data => {
+            const container = document.getElementById('liveTimers');
+            if (data.schedules && data.schedules.length > 0) {
+                container.innerHTML = data.schedules.slice(0, 5).map(s => `
+                    <div class="upcoming-item" onclick="window.location.href='/features/calendar/event/${s.id}'">
+                        <div class="upcoming-time">
+                            <div class="running-timer" style="font-size: 0.9rem;">
+                                ${formatTimeRemaining(s.time_remaining)}
+                            </div>
+                        </div>
+                        <div class="upcoming-details flex-grow-1">
+                            <h6>${s.title}</h6>
+                            <small>${s.type === 'event' ? 'Event' : 'Reminder'}</small>
+                        </div>
+                    </div>
+                `).join('');
+            } else {
+                container.innerHTML = `
+                    <div class="text-center py-3 text-muted">
+                        <i class="fas fa-check-circle fa-2x mb-2"></i>
+                        <p class="small mb-0">No upcoming schedules in 24h</p>
+                    </div>
+                `;
+            }
+        })
+        .catch(err => {
+            console.error('Error loading timers:', err);
+        });
+}
+
+// Format time remaining
+function formatTimeRemaining(tr) {
+    if (tr.days > 0) {
+        return `${tr.days}d ${tr.hours}h`;
+    } else if (tr.hours > 0) {
+        return `${tr.hours}h ${tr.minutes}m`;
+    } else if (tr.minutes > 0) {
+        return `${tr.minutes}m ${tr.seconds}s`;
+    } else {
+        return `${tr.seconds}s`;
+    }
+}
+
+// Check schedule popup
+function checkSchedulePopup() {
+    // Check if popup was already shown today
+    const lastShown = localStorage.getItem('schedulePopupShown');
+    const today = new Date().toDateString();
+    
+    if (lastShown !== today) {
+        fetch('/features/calendar/schedule-popup')
+            .then(response => response.json())
+            .then(data => {
+                if (data.show_popup) {
+                    showSchedulePopup(data);
+                    localStorage.setItem('schedulePopupShown', today);
+                }
+            })
+            .catch(err => console.error('Error checking popup:', err));
+    }
+}
+
+// Show schedule popup
+function showSchedulePopup(data) {
+    const popup = document.getElementById('schedulePopup');
+    const content = document.getElementById('popupContent');
+    
+    let html = '';
+    
+    if (data.today_events && data.today_events.length > 0) {
+        html += '<h6 class="text-primary mb-2"><i class="fas fa-sun me-1"></i>Today\'s Events</h6>';
+        data.today_events.forEach(e => {
+            html += `
+                <div class="upcoming-item" onclick="window.location.href='/features/calendar/event/${e.id}'">
+                    <div class="upcoming-time">
+                        <div class="time">${new Date(e.start_time).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
+                    </div>
+                    <div class="upcoming-details">
+                        <h6>${e.title}</h6>
+                    </div>
+                </div>
+            `;
+        });
+    }
+    
+    if (data.pending_reminders && data.pending_reminders.length > 0) {
+        html += '<h6 class="text-warning mt-3 mb-2"><i class="fas fa-bell me-1"></i>Pending Reminders</h6>';
+        data.pending_reminders.forEach(r => {
+            html += `
+                <div class="upcoming-item">
+                    <div class="upcoming-details">
+                        <h6>${r.notes || 'Reminder'}</h6>
+                    </div>
+                </div>
+            `;
+        });
+    }
+    
+    content.innerHTML = html;
+    popup.style.display = 'block';
+}
+
+// Close schedule popup
+function closeSchedulePopup() {
+    document.getElementById('schedulePopup').style.display = 'none';
+}
+
+// Initialize on load
+document.addEventListener('DOMContentLoaded', initCalendar);
+</script>
+{% endblock %}

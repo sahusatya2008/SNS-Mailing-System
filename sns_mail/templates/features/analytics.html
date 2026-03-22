@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+
+{% block title %}Email Analytics - SNS Mail{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h2 class="mb-4">
+            <i class="fas fa-chart-line text-primary"></i>
+            Email Analytics
+            <span class="badge bg-success">New Feature!</span>
+        </h2>
+        <p class="text-muted">Track your email patterns and productivity metrics.</p>
+    </div>
+</div>
+
+<!-- Summary Cards -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body text-center">
+                <h3>{{ total_sent }}</h3>
+                <small>Emails Sent (30d)</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-success text-white">
+            <div class="card-body text-center">
+                <h3>{{ total_received }}</h3>
+                <small>Emails Received (30d)</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-info text-white">
+            <div class="card-body text-center">
+                <h3>{{ total_read }}</h3>
+                <small>Emails Read (30d)</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-warning text-white">
+            <div class="card-body text-center">
+                <h3>{{ avg_productivity|round(1) }}</h3>
+                <small>Avg Productivity Score</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Today's Stats -->
+{% if today_analytics %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Today's Statistics</h5>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-md-3">
+                        <h4>{{ today_analytics.emails_sent }}</h4>
+                        <p class="text-muted">Sent</p>
+                    </div>
+                    <div class="col-md-3">
+                        <h4>{{ today_analytics.emails_received }}</h4>
+                        <p class="text-muted">Received</p>
+                    </div>
+                    <div class="col-md-3">
+                        <h4>{{ today_analytics.emails_read }}</h4>
+                        <p class="text-muted">Read</p>
+                    </div>
+                    <div class="col-md-3">
+                        <h4>{{ today_analytics.productivity_score|round(1) }}</h4>
+                        <p class="text-muted">Productivity</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Analytics History -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Last 30 Days</h5>
+            </div>
+            <div class="card-body">
+                {% if analytics_data %}
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Sent</th>
+                                    <th>Received</th>
+                                    <th>Read</th>
+                                    <th>Productivity</th>
+                                    <th>Focus Time</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for analytics in analytics_data %}
+                                    <tr>
+                                        <td>{{ analytics.date.strftime('%Y-%m-%d') }}</td>
+                                        <td>{{ analytics.emails_sent }}</td>
+                                        <td>{{ analytics.emails_received }}</td>
+                                        <td>{{ analytics.emails_read }}</td>
+                                        <td>
+                                            <div class="progress" style="height: 20px;">
+                                                <div class="progress-bar bg-success" 
+                                                     style="width: {{ analytics.productivity_score }}%">
+                                                    {{ analytics.productivity_score|round(1) }}
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>{{ analytics.focus_time }} min</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted text-center">No analytics data yet. Start using your email to see insights!</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

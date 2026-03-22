@@ -1,0 +1,519 @@
+{% extends "base.html" %}
+
+{% block title %}{{ event.title }} - SNS Mail{% endblock %}
+
+{% block extra_css %}
+<style>
+.event-header {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
+    padding: 30px;
+    margin-bottom: 20px;
+}
+.event-title {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+}
+.event-type-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 5px 15px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+.type-event { background: rgba(0, 212, 255, 0.2); color: #00d4ff; }
+.type-meeting { background: rgba(139, 92, 246, 0.2); color: #8b5cf6; }
+.type-reminder { background: rgba(245, 158, 11, 0.2); color: #f59e0b; }
+.type-task { background: rgba(16, 185, 129, 0.2); color: #10b981; }
+.countdown-timer {
+    background: linear-gradient(135deg, rgba(0, 212, 255, 0.1), rgba(139, 92, 246, 0.1));
+    border: 1px solid rgba(0, 212, 255, 0.3);
+    border-radius: 15px;
+    padding: 20px;
+    text-align: center;
+    margin-bottom: 20px;
+}
+.countdown-timer.ongoing {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(16, 185, 129, 0.2));
+    border-color: rgba(16, 185, 129, 0.5);
+}
+.countdown-timer.past {
+    background: linear-gradient(135deg, rgba(100, 116, 139, 0.1), rgba(100, 116, 139, 0.2));
+    border-color: rgba(100, 116, 139, 0.3);
+}
+.timer-value {
+    font-family: 'Orbitron', monospace;
+    font-size: 2.5rem;
+    font-weight: 700;
+    background: var(--gradient-main);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 0 30px rgba(0, 212, 255, 0.5);
+}
+.timer-label {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    margin-top: 5px;
+}
+.timer-units {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-top: 15px;
+}
+.timer-unit {
+    text-align: center;
+}
+.timer-unit .value {
+    font-family: 'Orbitron', monospace;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--cyan);
+}
+.timer-unit .label {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+}
+.info-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 15px;
+    padding: 20px;
+    margin-bottom: 15px;
+}
+.info-card h5 {
+    color: var(--cyan);
+    font-size: 0.9rem;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.info-row {
+    display: flex;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border-color);
+}
+.info-row:last-child {
+    border-bottom: none;
+}
+.info-row i {
+    width: 30px;
+    color: var(--cyan);
+}
+.info-row .label {
+    color: var(--text-muted);
+    min-width: 100px;
+}
+.info-row .value {
+    color: var(--text-light);
+}
+.attendee-card {
+    display: flex;
+    align-items: center;
+    padding: 12px;
+    background: rgba(10, 10, 20, 0.5);
+    border-radius: 10px;
+    margin-bottom: 8px;
+}
+.attendee-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--gradient-main);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 12px;
+    font-weight: 600;
+}
+.status-badge {
+    padding: 4px 12px;
+    border-radius: 15px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+.status-scheduled { background: rgba(0, 212, 255, 0.2); color: #00d4ff; }
+.status-in_progress { background: rgba(16, 185, 129, 0.2); color: #10b981; }
+.status-completed { background: rgba(100, 116, 139, 0.2); color: #94a3b8; }
+.status-cancelled { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+.action-btn {
+    flex: 1;
+    padding: 12px;
+    border-radius: 10px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+.action-btn:hover {
+    transform: translateY(-2px);
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <nav aria-label="breadcrumb" class="mb-3">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('features.calendar') }}">Calendar</a></li>
+                <li class="breadcrumb-item active">{{ event.title }}</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<!-- Event Header -->
+<div class="event-header">
+    <div class="row align-items-center">
+        <div class="col-lg-8">
+            <div class="d-flex align-items-center gap-3 mb-2">
+                <span class="event-type-badge type-{{ event.event_type }}">
+                    <i class="fas fa-{% if event.is_meeting %}video{% elif event.event_type == 'reminder' %}bell{% elif event.event_type == 'task' %}tasks{% else %}calendar{% endif %} me-1"></i>
+                    {{ event.event_type|title }}
+                </span>
+                <span class="status-badge status-{{ event.status }}">
+                    {{ event.status|replace('_', ' ')|title }}
+                </span>
+            </div>
+            <h1 class="event-title" style="color: {{ event.color }};">
+                {{ event.title }}
+            </h1>
+            {% if event.description %}
+            <p class="text-muted mb-0">{{ event.description }}</p>
+            {% endif %}
+        </div>
+        <div class="col-lg-4 text-lg-end mt-3 mt-lg-0">
+            <div class="d-flex gap-2 justify-content-lg-end">
+                <a href="{{ url_for('features.edit_event', event_id=event.id) }}" class="btn btn-outline-primary">
+                    <i class="fas fa-edit me-1"></i> Edit
+                </a>
+                <button class="btn btn-outline-danger" onclick="deleteEvent({{ event.id }})">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Main Content -->
+    <div class="col-lg-8">
+        <!-- Countdown Timer -->
+        <div class="countdown-timer" id="countdownTimer">
+            <div class="timer-value" id="timerValue">
+                {% if time_remaining %}
+                    {{ "%02d:%02d:%02d:%02d"|format(time_remaining.days, time_remaining.hours, time_remaining.minutes, time_remaining.seconds) }}
+                {% else %}
+                    Event Started
+                {% endif %}
+            </div>
+            <div class="timer-label" id="timerLabel">
+                {% if event.status == 'completed' %}
+                    Event Completed
+                {% elif event.status == 'cancelled' %}
+                    Event Cancelled
+                {% elif time_remaining %}
+                    Time Until Event
+                {% else %}
+                    Event In Progress
+                {% endif %}
+            </div>
+            <div class="timer-units" id="timerUnits">
+                <div class="timer-unit">
+                    <div class="value" id="timerDays">{{ time_remaining.days if time_remaining else 0 }}</div>
+                    <div class="label">Days</div>
+                </div>
+                <div class="timer-unit">
+                    <div class="value" id="timerHours">{{ time_remaining.hours if time_remaining else 0 }}</div>
+                    <div class="label">Hours</div>
+                </div>
+                <div class="timer-unit">
+                    <div class="value" id="timerMinutes">{{ time_remaining.minutes if time_remaining else 0 }}</div>
+                    <div class="label">Minutes</div>
+                </div>
+                <div class="timer-unit">
+                    <div class="value" id="timerSeconds">{{ time_remaining.seconds if time_remaining else 0 }}</div>
+                    <div class="label">Seconds</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Event Details -->
+        <div class="info-card">
+            <h5><i class="fas fa-info-circle"></i> Event Details</h5>
+            <div class="info-row">
+                <i class="fas fa-calendar"></i>
+                <span class="label">Date</span>
+                <span class="value">{{ event.start_time.strftime('%A, %B %d, %Y') }}</span>
+            </div>
+            <div class="info-row">
+                <i class="fas fa-clock"></i>
+                <span class="label">Time</span>
+                <span class="value">
+                    {{ event.start_time.strftime('%I:%M %p') }}
+                    {% if event.end_time %}
+                        - {{ event.end_time.strftime('%I:%M %p') }}
+                    {% endif %}
+                    {% if event.is_all_day %}
+                        (All Day)
+                    {% endif %}
+                </span>
+            </div>
+            {% if event.location %}
+            <div class="info-row">
+                <i class="fas fa-map-marker-alt"></i>
+                <span class="label">Location</span>
+                <span class="value">{{ event.location }}</span>
+            </div>
+            {% endif %}
+            <div class="info-row">
+                <i class="fas fa-palette"></i>
+                <span class="label">Color</span>
+                <span class="value">
+                    <span style="display: inline-block; width: 20px; height: 20px; border-radius: 50%; background: {{ event.color }}; vertical-align: middle;"></span>
+                    {{ event.color }}
+                </span>
+            </div>
+        </div>
+
+        <!-- Meeting Info -->
+        {% if event.is_meeting %}
+        <div class="info-card">
+            <h5><i class="fas fa-video"></i> Meeting Information</h5>
+            {% if event.meeting_platform %}
+            <div class="info-row">
+                <i class="fas fa-desktop"></i>
+                <span class="label">Platform</span>
+                <span class="value">{{ event.meeting_platform|title }}</span>
+            </div>
+            {% endif %}
+            {% if event.meeting_link %}
+            <div class="info-row">
+                <i class="fas fa-link"></i>
+                <span class="label">Meeting Link</span>
+                <span class="value">
+                    <a href="{{ event.meeting_link }}" target="_blank" class="btn btn-success btn-sm">
+                        <i class="fas fa-external-link-alt me-1"></i> Join Meeting
+                    </a>
+                </span>
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <!-- Reminder Settings -->
+        <div class="info-card">
+            <h5><i class="fas fa-bell"></i> Reminder Settings</h5>
+            <div class="info-row">
+                <i class="fas fa-calendar-day {% if event.reminder_one_day %}text-success{% else %}text-muted{% endif %}"></i>
+                <span class="label">1 Day Before</span>
+                <span class="value">
+                    {% if event.reminder_one_day %}
+                        <span class="badge bg-success">Enabled</span>
+                    {% else %}
+                        <span class="badge bg-secondary">Disabled</span>
+                    {% endif %}
+                </span>
+            </div>
+            <div class="info-row">
+                <i class="fas fa-clock {% if event.reminder_one_hour %}text-success{% else %}text-muted{% endif %}"></i>
+                <span class="label">1 Hour Before</span>
+                <span class="value">
+                    {% if event.reminder_one_hour %}
+                        <span class="badge bg-success">Enabled</span>
+                    {% else %}
+                        <span class="badge bg-secondary">Disabled</span>
+                    {% endif %}
+                </span>
+            </div>
+            {% if event.reminder_custom %}
+            <div class="info-row">
+                <i class="fas fa-stopwatch text-info"></i>
+                <span class="label">Custom</span>
+                <span class="value">
+                    <span class="badge bg-info">{{ event.reminder_custom }} minutes before</span>
+                </span>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Linked Items -->
+        {% if event.task or event.email or event.reminder %}
+        <div class="info-card">
+            <h5><i class="fas fa-link"></i> Linked Items</h5>
+            {% if event.task %}
+            <div class="info-row">
+                <i class="fas fa-tasks text-warning"></i>
+                <span class="label">Task</span>
+                <span class="value">
+                    <a href="{{ url_for('features.view_task', task_id=event.task.id) }}">
+                        {{ event.task.title }}
+                    </a>
+                </span>
+            </div>
+            {% endif %}
+            {% if event.email %}
+            <div class="info-row">
+                <i class="fas fa-envelope text-primary"></i>
+                <span class="label">Email</span>
+                <span class="value">
+                    <a href="{{ url_for('client.view_email', email_id=event.email.id) }}">
+                        {{ event.email.subject }}
+                    </a>
+                </span>
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Sidebar -->
+    <div class="col-lg-4">
+        <!-- Quick Actions -->
+        <div class="info-card">
+            <h5><i class="fas fa-bolt"></i> Quick Actions</h5>
+            <div class="d-flex gap-2 flex-wrap">
+                {% if event.status == 'scheduled' %}
+                <button class="action-btn btn btn-success" onclick="markComplete({{ event.id }})">
+                    <i class="fas fa-check"></i><br>
+                    <small>Complete</small>
+                </button>
+                {% endif %}
+                {% if event.meeting_link %}
+                <a href="{{ event.meeting_link }}" target="_blank" class="action-btn btn btn-primary">
+                    <i class="fas fa-video"></i><br>
+                    <small>Join</small>
+                </a>
+                {% endif %}
+                <a href="{{ url_for('features.create_event') }}" class="action-btn btn btn-info">
+                    <i class="fas fa-copy"></i><br>
+                    <small>Duplicate</small>
+                </a>
+            </div>
+        </div>
+
+        <!-- Attendees -->
+        {% if attendees %}
+        <div class="info-card">
+            <h5><i class="fas fa-users"></i> Attendees ({{ attendees|length }})</h5>
+            {% for attendee in attendees %}
+            <div class="attendee-card">
+                <div class="attendee-avatar">
+                    {{ (attendee.user.username if attendee.user else attendee.email)[0]|upper }}
+                </div>
+                <div class="flex-grow-1">
+                    <div class="fw-bold">
+                        {{ attendee.user.username if attendee.user else attendee.email }}
+                    </div>
+                    <small class="text-muted">
+                        {% if attendee.response_status == 'accepted' %}
+                            <span class="text-success"><i class="fas fa-check"></i> Accepted</span>
+                        {% elif attendee.response_status == 'declined' %}
+                            <span class="text-danger"><i class="fas fa-times"></i> Declined</span>
+                        {% elif attendee.response_status == 'tentative' %}
+                            <span class="text-warning"><i class="fas fa-question"></i> Tentative</span>
+                        {% else %}
+                            <span class="text-muted"><i class="fas fa-clock"></i> Pending</span>
+                        {% endif %}
+                    </small>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Event Timeline -->
+        <div class="info-card">
+            <h5><i class="fas fa-history"></i> Timeline</h5>
+            <div class="info-row">
+                <i class="fas fa-plus text-success"></i>
+                <span class="label">Created</span>
+                <span class="value small">{{ event.created_at.strftime('%m/%d/%Y %I:%M %p') }}</span>
+            </div>
+            <div class="info-row">
+                <i class="fas fa-sync text-info"></i>
+                <span class="label">Updated</span>
+                <span class="value small">{{ event.updated_at.strftime('%m/%d/%Y %I:%M %p') }}</span>
+            </div>
+        </div>
+
+        <!-- Back to Calendar -->
+        <a href="{{ url_for('features.calendar') }}" class="btn btn-outline-primary w-100">
+            <i class="fas fa-arrow-left me-2"></i> Back to Calendar
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const startTime = new Date('{{ event.start_time.isoformat() }}');
+const endTime = {{ event.end_time.isoformat()|tojson if event.end_time else 'null' }};
+const eventId = {{ event.id }};
+
+function updateTimer() {
+    const now = new Date();
+    const diff = startTime - now;
+    const timer = document.getElementById('countdownTimer');
+    
+    if (diff > 0) {
+        // Event hasn't started
+        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+        
+        document.getElementById('timerDays').textContent = String(days).padStart(2, '0');
+        document.getElementById('timerHours').textContent = String(hours).padStart(2, '0');
+        document.getElementById('timerMinutes').textContent = String(minutes).padStart(2, '0');
+        document.getElementById('timerSeconds').textContent = String(seconds).padStart(2, '0');
+        
+        document.getElementById('timerValue').textContent = 
+            `${String(days).padStart(2, '0')}:${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        document.getElementById('timerLabel').textContent = 'Time Until Event';
+    } else {
+        // Event has started
+        timer.classList.add('ongoing');
+        document.getElementById('timerValue').textContent = 'EVENT STARTED';
+        document.getElementById('timerLabel').textContent = 'Event In Progress';
+        document.getElementById('timerUnits').style.display = 'none';
+    }
+}
+
+function deleteEvent(id) {
+    if (confirm('Are you sure you want to delete this event?')) {
+        fetch(`/features/calendar/event/${id}/delete`, {
+            method: 'POST'
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                window.location.href = '/features/calendar';
+            }
+        });
+    }
+}
+
+function markComplete(id) {
+    fetch(`/features/calendar/event/${id}/complete`, {
+        method: 'POST'
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        }
+    });
+}
+
+// Update timer every second
+setInterval(updateTimer, 1000);
+updateTimer();
+</script>
+{% endblock %}

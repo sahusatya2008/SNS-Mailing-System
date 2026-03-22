@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block title %}Schedule Email - SNS Mail{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h2 class="mb-4">
+            <i class="fas fa-clock text-primary"></i>
+            Schedule Email
+        </h2>
+        <p class="text-muted">Compose an email to be sent at a specific time.</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body">
+                <form method="POST">
+                    <div class="mb-3">
+                        <label for="recipient" class="form-label">Recipient <span class="text-danger">*</span></label>
+                        <input type="email" class="form-control" id="recipient" name="recipient" required 
+                               placeholder="recipient@example.com">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="subject" class="form-label">Subject <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="subject" name="subject" required 
+                               placeholder="Email subject">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="body" class="form-label">Message <span class="text-danger">*</span></label>
+                        <textarea class="form-control" id="body" name="body" rows="8" required
+                                  placeholder="Write your message here..."></textarea>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="scheduled_at" class="form-label">Schedule Date & Time <span class="text-danger">*</span></label>
+                        <input type="datetime-local" class="form-control" id="scheduled_at" name="scheduled_at" required>
+                    </div>
+                    
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" id="smart_schedule" name="smart_schedule">
+                        <label class="form-check-label" for="smart_schedule">
+                            <i class="fas fa-magic text-info"></i> Smart Schedule
+                            <small class="text-muted d-block">Let AI determine the optimal time to send</small>
+                        </label>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('features.scheduled_emails') }}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Back
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-clock"></i> Schedule Email
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card bg-light">
+            <div class="card-body">
+                <h5><i class="fas fa-lightbulb text-warning"></i> Tips</h5>
+                <ul class="small">
+                    <li>Best times to send: 9-11 AM or 2-4 PM</li>
+                    <li>Tuesdays and Thursdays have highest open rates</li>
+                    <li>Avoid sending on weekends for business emails</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="card mt-3 border-info">
+            <div class="card-body">
+                <h5><i class="fas fa-info-circle text-info"></i> Smart Schedule</h5>
+                <p class="small text-muted mb-0">
+                    Enable smart scheduling to let AI analyze recipient behavior and 
+                    determine the optimal time for maximum engagement.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+
+{% block title %}Bookmarks - SNS Mail{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h2 class="mb-4">
+            <i class="fas fa-bookmark text-warning"></i>
+            Bookmarked Emails
+        </h2>
+        <p class="text-muted">Quick access to your pinned, starred, and flagged emails.</p>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body text-center">
+                <h3>{{ bookmarks|length }}</h3>
+                <small>Total Bookmarks</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-warning text-white">
+            <div class="card-body text-center">
+                <h3>{{ bookmarks|selectattr('bookmark_type', 'equalto', 'pin')|list|length }}</h3>
+                <small>Pinned</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-info text-white">
+            <div class="card-body text-center">
+                <h3>{{ bookmarks|selectattr('bookmark_type', 'equalto', 'star')|list|length }}</h3>
+                <small>Starred</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-danger text-white">
+            <div class="card-body text-center">
+                <h3>{{ bookmarks|selectattr('bookmark_type', 'equalto', 'flag')|list|length }}</h3>
+                <small>Flagged</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        {% if bookmarks %}
+            <div class="card">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Type</th>
+                                    <th>Email Subject</th>
+                                    <th>Color</th>
+                                    <th>Notes</th>
+                                    <th>Created</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for bookmark in bookmarks %}
+                                    <tr>
+                                        <td>
+                                            <span class="badge 
+                                                {% if bookmark.bookmark_type == 'pin' %}bg-warning
+                                                {% elif bookmark.bookmark_type == 'star' %}bg-info
+                                                {% else %}bg-danger{% endif %}">
+                                                <i class="fas 
+                                                    {% if bookmark.bookmark_type == 'pin' %}fa-thumbtack
+                                                    {% elif bookmark.bookmark_type == 'star' %}fa-star
+                                                    {% else %}fa-flag{% endif %}"></i>
+                                                {{ bookmark.bookmark_type|title }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <a href="{{ url_for('client.view_email', email_id=bookmark.email_id) }}">
+                                                {{ bookmark.email_id }}
+                                            </a>
+                                        </td>
+                                        <td>
+                                            {% if bookmark.color %}
+                                                <span class="badge" style="background-color: {{ bookmark.color }};">
+                                                    {{ bookmark.color }}
+                                                </span>
+                                            {% else %}
+                                                <span class="text-muted">-</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if bookmark.notes %}
+                                                <small>{{ bookmark.notes[:50] }}{% if bookmark.notes|length > 50 %}...{% endif %}</small>
+                                            {% else %}
+                                                <span class="text-muted">-</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ bookmark.created_at.strftime('%Y-%m-%d') if bookmark.created_at else 'N/A' }}</td>
+                                        <td>
+                                            <a href="{{ url_for('client.view_email', email_id=bookmark.email_id) }}" class="btn btn-sm btn-primary">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-bookmark fa-4x text-muted mb-3"></i>
+                <h4>No bookmarks yet</h4>
+                <p class="text-muted">Bookmark emails by clicking the pin, star, or flag icon when viewing an email.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

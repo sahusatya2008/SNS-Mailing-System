@@ -1,0 +1,1375 @@
+{% extends "base.html" %}
+
+{% block title %}Template Designer - SNS Mail{% endblock %}
+
+{% block extra_css %}
+<style>
+.email-designer-container {
+    min-height: calc(100vh - 200px);
+}
+
+.designer-toolbar {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 10px;
+    padding: 15px;
+    margin-bottom: 15px;
+}
+
+.designer-toolbar .btn-group .btn {
+    border-color: rgba(255,255,255,0.3);
+    color: white;
+}
+
+.designer-toolbar .btn-group .btn:hover {
+    background-color: rgba(255,255,255,0.2);
+}
+
+.designer-toolbar .btn-group .btn.active {
+    background-color: rgba(255,255,255,0.3);
+}
+
+.tool-card {
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    transition: transform 0.2s;
+}
+
+.tool-card:hover {
+    transform: translateY(-2px);
+}
+
+.tool-card .card-header {
+    border-radius: 10px 10px 0 0 !important;
+    font-weight: 600;
+}
+
+.email-editor-wrapper {
+    border: 2px solid #e0e0e0;
+    border-radius: 10px;
+    overflow: hidden;
+    background: #fafafa;
+}
+
+.email-editor {
+    min-height: 500px;
+    padding: 20px;
+    outline: none;
+    background: #ffffff;
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.email-editor:focus {
+    background: #ffffff;
+}
+
+.preview-container {
+    border: 2px solid #e0e0e0;
+    border-radius: 10px;
+    overflow: hidden;
+    background: #f5f5f5;
+}
+
+.preview-frame {
+    min-height: 300px;
+    background: #ffffff;
+    padding: 15px;
+    overflow: auto;
+}
+
+.color-swatch {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 2px solid #ddd;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.color-swatch:hover {
+    transform: scale(1.1);
+}
+
+.layout-btn {
+    text-align: left;
+    padding: 10px 15px;
+    margin-bottom: 5px;
+    border-radius: 8px;
+    transition: all 0.2s;
+}
+
+.layout-btn:hover {
+    background-color: #e8f5e9;
+    transform: translateX(5px);
+}
+
+.variable-tag {
+    display: inline-block;
+    padding: 4px 10px;
+    margin: 2px;
+    background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+    border-radius: 15px;
+    font-size: 12px;
+    color: #1565c0;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.variable-tag:hover {
+    background: linear-gradient(135deg, #bbdefb 0%, #90caf9 100%);
+    transform: scale(1.05);
+}
+
+.editor-status-bar {
+    background: #f5f5f5;
+    padding: 8px 15px;
+    border-top: 1px solid #e0e0e0;
+    font-size: 12px;
+    color: #666;
+}
+
+.template-info-bar {
+    background: #ffffff;
+    padding: 15px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.device-btn {
+    padding: 8px 15px;
+    border-radius: 5px;
+}
+
+.device-btn.active {
+    background-color: #ffc107 !important;
+    color: #000 !important;
+}
+
+/* Modal improvements - CRITICAL FIX - MUST OVERRIDE style.css */
+#linkModal,
+#imageModal,
+#variableModal,
+#tableModal {
+    z-index: 99999 !important;
+    background: transparent !important;
+}
+
+#linkModal .modal-dialog,
+#imageModal .modal-dialog,
+#variableModal .modal-dialog,
+#tableModal .modal-dialog {
+    z-index: 100000 !important;
+}
+
+#linkModal .modal-content,
+#imageModal .modal-content,
+#variableModal .modal-content,
+#tableModal .modal-content {
+    border-radius: 15px;
+    border: none;
+    background: #ffffff;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+}
+
+#linkModal .modal-header,
+#imageModal .modal-header,
+#variableModal .modal-header,
+#tableModal .modal-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 15px 15px 0 0;
+}
+
+#linkModal .modal-header .btn-close,
+#imageModal .modal-header .btn-close,
+#variableModal .modal-header .btn-close,
+#tableModal .modal-header .btn-close {
+    filter: brightness(0) invert(1);
+}
+
+/* Ensure modal is clickable */
+#linkModal.show,
+#imageModal.show,
+#variableModal.show,
+#tableModal.show {
+    pointer-events: auto !important;
+    background: rgba(0, 0, 0, 0.5) !important;
+}
+
+#linkModal .modal-dialog,
+#imageModal .modal-dialog,
+#variableModal .modal-dialog,
+#tableModal .modal-dialog {
+    pointer-events: auto !important;
+}
+
+#linkModal .modal-content *,
+#imageModal .modal-content *,
+#variableModal .modal-content *,
+#tableModal .modal-content * {
+    pointer-events: auto !important;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .email-editor {
+        min-height: 300px;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h2 class="mb-2">
+            <i class="fas fa-palette text-primary"></i>
+            Email Template Designer
+        </h2>
+        <p class="text-muted mb-4">Design beautiful, responsive email templates with our comprehensive toolkit.</p>
+    </div>
+</div>
+
+<div class="row email-designer-container">
+    <!-- Left Sidebar - Tools -->
+    <div class="col-lg-3 col-md-4">
+        <!-- Text Formatting Tools -->
+        <div class="card tool-card mb-3">
+            <div class="card-header bg-primary text-white">
+                <h6 class="mb-0"><i class="fas fa-font me-2"></i>Text Formatting</h6>
+            </div>
+            <div class="card-body">
+                <div class="btn-group w-100 mb-2" role="group">
+                    <button type="button" class="btn btn-outline-secondary btn-sm" onclick="formatText('bold')" title="Bold (Ctrl+B)">
+                        <i class="fas fa-bold"></i>
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary btn-sm" onclick="formatText('italic')" title="Italic (Ctrl+I)">
+                        <i class="fas fa-italic"></i>
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary btn-sm" onclick="formatText('underline')" title="Underline (Ctrl+U)">
+                        <i class="fas fa-underline"></i>
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary btn-sm" onclick="formatText('strikeThrough')" title="Strikethrough">
+                        <i class="fas fa-strikethrough"></i>
+                    </button>
+                </div>
+                <div class="btn-group w-100 mb-2" role="group">
+                    <button type="button" class="btn btn-outline-secondary btn-sm" onclick="formatText('justifyLeft')" title="Align Left">
+                        <i class="fas fa-align-left"></i>
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary btn-sm" onclick="formatText('justifyCenter')" title="Align Center">
+                        <i class="fas fa-align-center"></i>
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary btn-sm" onclick="formatText('justifyRight')" title="Align Right">
+                        <i class="fas fa-align-right"></i>
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary btn-sm" onclick="formatText('justifyFull')" title="Justify">
+                        <i class="fas fa-align-justify"></i>
+                    </button>
+                </div>
+                <div class="btn-group w-100" role="group">
+                    <button type="button" class="btn btn-outline-secondary btn-sm" onclick="formatText('insertUnorderedList')" title="Bullet List">
+                        <i class="fas fa-list-ul"></i>
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary btn-sm" onclick="formatText('insertOrderedList')" title="Numbered List">
+                        <i class="fas fa-list-ol"></i>
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary btn-sm" onclick="formatText('indent')" title="Indent">
+                        <i class="fas fa-indent"></i>
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary btn-sm" onclick="formatText('outdent')" title="Outdent">
+                        <i class="fas fa-outdent"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Font Controls -->
+        <div class="card tool-card mb-3">
+            <div class="card-header bg-info text-white">
+                <h6 class="mb-0"><i class="fas fa-text-height me-2"></i>Font Settings</h6>
+            </div>
+            <div class="card-body">
+                <div class="mb-2">
+                    <label class="form-label small">Font Family</label>
+                    <select class="form-select form-select-sm" id="fontFamily" onchange="changeFont(this.value)">
+                        <option value="Arial, sans-serif">Arial</option>
+                        <option value="Georgia, serif">Georgia</option>
+                        <option value="Times New Roman, serif">Times New Roman</option>
+                        <option value="Courier New, monospace">Courier New</option>
+                        <option value="Verdana, sans-serif">Verdana</option>
+                        <option value="Trebuchet MS, sans-serif">Trebuchet MS</option>
+                        <option value="Impact, sans-serif">Impact</option>
+                        <option value="Comic Sans MS, cursive">Comic Sans MS</option>
+                        <option value="Palatino Linotype, serif">Palatino</option>
+                        <option value="Lucida Sans, sans-serif">Lucida Sans</option>
+                    </select>
+                </div>
+                <div class="mb-2">
+                    <label class="form-label small">Font Size</label>
+                    <select class="form-select form-select-sm" id="fontSize" onchange="changeFontSize(this.value)">
+                        <option value="1">8pt</option>
+                        <option value="2">10pt</option>
+                        <option value="3" selected>12pt (Normal)</option>
+                        <option value="4">14pt</option>
+                        <option value="5">18pt</option>
+                        <option value="6">24pt</option>
+                        <option value="7">36pt</option>
+                    </select>
+                </div>
+                <div class="row g-2">
+                    <div class="col-6">
+                        <label class="form-label small">Text Color</label>
+                        <input type="color" class="form-control form-control-color w-100" id="textColor" value="#000000" onchange="changeTextColor(this.value)">
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label small">Highlight</label>
+                        <input type="color" class="form-control form-control-color w-100" id="highlightColor" value="#ffff00" onchange="changeHighlight(this.value)">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Insert Elements -->
+        <div class="card tool-card mb-3">
+            <div class="card-header bg-success text-white">
+                <h6 class="mb-0"><i class="fas fa-plus-circle me-2"></i>Insert Elements</h6>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-1">
+                    <button class="btn btn-outline-success btn-sm text-start" onclick="insertLink()">
+                        <i class="fas fa-link me-2"></i>Insert Link
+                    </button>
+                    <button class="btn btn-outline-success btn-sm text-start" onclick="insertImage()">
+                        <i class="fas fa-image me-2"></i>Insert Image
+                    </button>
+                    <button class="btn btn-outline-success btn-sm text-start" onclick="insertDivider()">
+                        <i class="fas fa-minus me-2"></i>Horizontal Line
+                    </button>
+                    <button class="btn btn-outline-success btn-sm text-start" onclick="insertButton()">
+                        <i class="fas fa-square me-2"></i>Call-to-Action Button
+                    </button>
+                    <button class="btn btn-outline-success btn-sm text-start" onclick="insertTable()">
+                        <i class="fas fa-table me-2"></i>Insert Table
+                    </button>
+                    <button class="btn btn-outline-success btn-sm text-start" onclick="insertVariable()">
+                        <i class="fas fa-code me-2"></i>Dynamic Variable
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Variables -->
+        <div class="card tool-card">
+            <div class="card-header bg-warning text-dark">
+                <h6 class="mb-0"><i class="fas fa-tags me-2"></i>Quick Variables</h6>
+            </div>
+            <div class="card-body">
+                <div class="d-flex flex-wrap">
+                    <span class="variable-tag" onclick="insertVariableAtCursor('recipient_name')">recipient_name</span>
+                    <span class="variable-tag" onclick="insertVariableAtCursor('sender_name')">sender_name</span>
+                    <span class="variable-tag" onclick="insertVariableAtCursor('date')">date</span>
+                    <span class="variable-tag" onclick="insertVariableAtCursor('time')">time</span>
+                    <span class="variable-tag" onclick="insertVariableAtCursor('company')">company</span>
+                    <span class="variable-tag" onclick="insertVariableAtCursor('subject')">subject</span>
+                    <span class="variable-tag" onclick="insertVariableAtCursor('email')">email</span>
+                    <span class="variable-tag" onclick="insertVariableAtCursor('phone')">phone</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Editor Area -->
+    <div class="col-lg-6 col-md-8">
+        <div class="card tool-card">
+            <div class="card-header d-flex justify-content-between align-items-center bg-secondary text-white">
+                <h6 class="mb-0"><i class="fas fa-edit me-2"></i>Email Editor</h6>
+                <div class="btn-group btn-group-sm">
+                    <button class="btn btn-light btn-sm" onclick="undoAction()" title="Undo (Ctrl+Z)">
+                        <i class="fas fa-undo"></i>
+                    </button>
+                    <button class="btn btn-light btn-sm" onclick="redoAction()" title="Redo (Ctrl+Y)">
+                        <i class="fas fa-redo"></i>
+                    </button>
+                    <button class="btn btn-light btn-sm" onclick="clearEditor()" title="Clear All">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Template Info Bar -->
+            <div class="template-info-bar">
+                <form id="templateForm" action="{{ url_for('features.save_template_design') }}" method="POST">
+                    <input type="hidden" name="template_id" value="{{ template.id if template else '' }}">
+                    <input type="hidden" name="body" id="bodyContent">
+                    <div class="row g-2 align-items-center">
+                        <div class="col-md-4">
+                            <input type="text" class="form-control form-control-sm" name="name" placeholder="Template Name" value="{{ template.name if template else '' }}" required>
+                        </div>
+                        <div class="col-md-3">
+                            <select class="form-select form-select-sm" name="category">
+                                <option value="business" {% if template and template.category == 'business' %}selected{% endif %}>Business</option>
+                                <option value="personal" {% if template and template.category == 'personal' %}selected{% endif %}>Personal</option>
+                                <option value="professional" {% if template and template.category == 'professional' %}selected{% endif %}>Professional</option>
+                                <option value="followup" {% if template and template.category == 'followup' %}selected{% endif %}>Follow-up</option>
+                                <option value="marketing" {% if template and template.category == 'marketing' %}selected{% endif %}>Marketing</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <input type="text" class="form-control form-control-sm" name="subject" id="subjectLine" placeholder="Email Subject" value="{{ template.subject if template else '' }}" required>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="d-flex gap-1">
+                                <button type="submit" class="btn btn-primary btn-sm flex-grow-1">
+                                    <i class="fas fa-save me-1"></i>Save
+                                </button>
+                                <button type="button" class="btn btn-success btn-sm flex-grow-1" onclick="useTemplate()">
+                                    <i class="fas fa-paper-plane me-1"></i>Use
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Editor Area -->
+            <div class="email-editor-wrapper">
+                <div id="emailEditor" contenteditable="true" class="email-editor">
+                    {% if template %}
+                        {{ template.body|safe }}
+                    {% else %}
+                        <div style="text-align: center; padding: 60px 20px; color: #999; background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); border-radius: 10px; margin: 10px;">
+                            <i class="fas fa-envelope-open-text fa-4x mb-4" style="color: #667eea;"></i>
+                            <h3 style="color: #333;">Start Designing Your Email</h3>
+                            <p style="color: #666;">Use the tools on the left to format your email,<br>or choose a layout template below.</p>
+                            <div style="margin-top: 20px;">
+                                <button class="btn btn-primary me-2" onclick="insertLayout('header-body-footer')">
+                                    <i class="fas fa-bars me-1"></i>Basic Layout
+                                </button>
+                                <button class="btn btn-success" onclick="insertLayout('hero-banner')">
+                                    <i class="fas fa-star me-1"></i>Hero Banner
+                                </button>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Status Bar -->
+                <div class="editor-status-bar d-flex justify-content-between">
+                    <span id="wordCount">Words: 0 | Characters: 0</span>
+                    <span id="variableCount">Variables: 0</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Sidebar - Preview & Settings -->
+    <div class="col-lg-3 col-md-12 mt-lg-0 mt-3">
+        <!-- Preview Section -->
+        <div class="card tool-card mb-3">
+            <div class="card-header bg-warning text-dark">
+                <h6 class="mb-0"><i class="fas fa-eye me-2"></i>Live Preview</h6>
+            </div>
+            <div class="card-body">
+                <div class="btn-group w-100 mb-2" role="group">
+                    <button type="button" class="btn btn-outline-warning btn-sm device-btn active" onclick="previewDevice('desktop')">
+                        <i class="fas fa-desktop"></i>
+                    </button>
+                    <button type="button" class="btn btn-outline-warning btn-sm device-btn" onclick="previewDevice('tablet')">
+                        <i class="fas fa-tablet-alt"></i>
+                    </button>
+                    <button type="button" class="btn btn-outline-warning btn-sm device-btn" onclick="previewDevice('mobile')">
+                        <i class="fas fa-mobile-alt"></i>
+                    </button>
+                </div>
+                <div class="preview-container">
+                    <div id="previewFrame" class="preview-frame"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Layout Templates -->
+        <div class="card tool-card mb-3">
+            <div class="card-header bg-danger text-white">
+                <h6 class="mb-0"><i class="fas fa-th-large me-2"></i>Layout Templates</h6>
+            </div>
+            <div class="card-body p-2">
+                <button class="btn btn-outline-secondary btn-sm layout-btn w-100" onclick="insertLayout('header-body-footer')">
+                    <i class="fas fa-bars me-2 text-primary"></i>Header + Body + Footer
+                </button>
+                <button class="btn btn-outline-secondary btn-sm layout-btn w-100" onclick="insertLayout('two-column')">
+                    <i class="fas fa-columns me-2 text-success"></i>Two Column Layout
+                </button>
+                <button class="btn btn-outline-secondary btn-sm layout-btn w-100" onclick="insertLayout('hero-banner')">
+                    <i class="fas fa-image me-2 text-danger"></i>Hero Banner
+                </button>
+                <button class="btn btn-outline-secondary btn-sm layout-btn w-100" onclick="insertLayout('call-to-action')">
+                    <i class="fas fa-hand-pointer me-2 text-warning"></i>Call to Action
+                </button>
+                <button class="btn btn-outline-secondary btn-sm layout-btn w-100" onclick="insertLayout('newsletter')">
+                    <i class="fas fa-newspaper me-2 text-info"></i>Newsletter Style
+                </button>
+                <button class="btn btn-outline-secondary btn-sm layout-btn w-100" onclick="insertLayout('invitation')">
+                    <i class="fas fa-envelope-open-text me-2 text-secondary"></i>Event Invitation
+                </button>
+            </div>
+        </div>
+
+        <!-- Color Schemes -->
+        <div class="card tool-card mb-3">
+            <div class="card-header bg-dark text-white">
+                <h6 class="mb-0"><i class="fas fa-palette me-2"></i>Color Schemes</h6>
+            </div>
+            <div class="card-body">
+                <div class="d-flex flex-wrap gap-2 justify-content-center">
+                    <button class="color-swatch" onclick="applyColorScheme('#1a73e8', '#ffffff')" style="background: linear-gradient(135deg, #1a73e8, #ffffff);" title="Blue"></button>
+                    <button class="color-swatch" onclick="applyColorScheme('#34a853', '#ffffff')" style="background: linear-gradient(135deg, #34a853, #ffffff);" title="Green"></button>
+                    <button class="color-swatch" onclick="applyColorScheme('#ea4335', '#ffffff')" style="background: linear-gradient(135deg, #ea4335, #ffffff);" title="Red"></button>
+                    <button class="color-swatch" onclick="applyColorScheme('#fbbc04', '#000000')" style="background: linear-gradient(135deg, #fbbc04, #000000);" title="Yellow"></button>
+                    <button class="color-swatch" onclick="applyColorScheme('#673ab7', '#ffffff')" style="background: linear-gradient(135deg, #673ab7, #ffffff);" title="Purple"></button>
+                    <button class="color-swatch" onclick="applyColorScheme('#00bcd4', '#000000')" style="background: linear-gradient(135deg, #00bcd4, #000000);" title="Cyan"></button>
+                    <button class="color-swatch" onclick="applyColorScheme('#ff5722', '#ffffff')" style="background: linear-gradient(135deg, #ff5722, #ffffff);" title="Orange"></button>
+                    <button class="color-swatch" onclick="applyColorScheme('#607d8b', '#ffffff')" style="background: linear-gradient(135deg, #607d8b, #ffffff);" title="Gray"></button>
+                </div>
+                <div class="mt-2">
+                    <label class="form-label small">Background Color</label>
+                    <input type="color" class="form-control form-control-color w-100" id="bgColor" value="#ffffff" onchange="changeBackground(this.value)">
+                </div>
+            </div>
+        </div>
+
+        <!-- Export Options -->
+        <div class="card tool-card">
+            <div class="card-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                <h6 class="mb-0"><i class="fas fa-download me-2"></i>Export Options</h6>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-1">
+                    <button class="btn btn-outline-primary btn-sm" onclick="exportHTML()">
+                        <i class="fas fa-code me-1"></i>Export as HTML
+                    </button>
+                    <button class="btn btn-outline-secondary btn-sm" onclick="exportText()">
+                        <i class="fas fa-file-alt me-1"></i>Export as Text
+                    </button>
+                    <button class="btn btn-outline-info btn-sm" onclick="copyToClipboard()">
+                        <i class="fas fa-copy me-1"></i>Copy HTML
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Link Modal -->
+<div class="modal fade" id="linkModal" tabindex="-1" style="z-index: 99999;">
+    <div class="modal-dialog" style="z-index: 100000;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-link me-2"></i>Insert Link</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">URL</label>
+                    <input type="url" class="form-control" id="linkUrl" placeholder="https://example.com">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Link Text</label>
+                    <input type="text" class="form-control" id="linkText" placeholder="Click here">
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="linkNewTab" checked>
+                    <label class="form-check-label" for="linkNewTab">Open in new tab</label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="insertLinkConfirm()">Insert Link</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Image Modal -->
+<div class="modal fade" id="imageModal" tabindex="-1" style="z-index: 99999;">
+    <div class="modal-dialog" style="z-index: 100000;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-image me-2"></i>Insert Image</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">Image URL</label>
+                    <input type="url" class="form-control" id="imageUrl" placeholder="https://example.com/image.jpg">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Alt Text (Description)</label>
+                    <input type="text" class="form-control" id="imageAlt" placeholder="Image description">
+                </div>
+                <div class="row g-2">
+                    <div class="col-6">
+                        <label class="form-label">Width</label>
+                        <input type="text" class="form-control" id="imageWidth" placeholder="100% or 300px">
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label">Alignment</label>
+                        <select class="form-select" id="imageAlign">
+                            <option value="none">None</option>
+                            <option value="left">Left</option>
+                            <option value="center" selected>Center</option>
+                            <option value="right">Right</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="insertImageConfirm()">Insert Image</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Variable Modal -->
+<div class="modal fade" id="variableModal" tabindex="-1" style="z-index: 99999;">
+    <div class="modal-dialog" style="z-index: 100000;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-code me-2"></i>Insert Variable</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">Variable Name</label>
+                    <input type="text" class="form-control" id="variableName" placeholder="variable_name">
+                    <small class="text-muted">Use lowercase with underscores (e.g., recipient_name)</small>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Common Variables</label>
+                    <div class="d-flex flex-wrap gap-1">
+                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="setVariable('recipient_name')">recipient_name</button>
+                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="setVariable('sender_name')">sender_name</button>
+                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="setVariable('date')">date</button>
+                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="setVariable('company')">company</button>
+                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="setVariable('email')">email</button>
+                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="setVariable('phone')">phone</button>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="insertVariableConfirm()">Insert Variable</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Table Modal -->
+<div class="modal fade" id="tableModal" tabindex="-1" style="z-index: 99999;">
+    <div class="modal-dialog" style="z-index: 100000;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-table me-2"></i>Insert Table</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row g-2 mb-3">
+                    <div class="col-6">
+                        <label class="form-label">Rows</label>
+                        <input type="number" class="form-control" id="tableRows" value="3" min="1" max="10">
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label">Columns</label>
+                        <input type="number" class="form-control" id="tableCols" value="3" min="1" max="10">
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Header Style</label>
+                    <select class="form-select" id="tableHeaderStyle">
+                        <option value="primary">Blue</option>
+                        <option value="success">Green</option>
+                        <option value="warning">Yellow</option>
+                        <option value="danger">Red</option>
+                        <option value="dark">Dark</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="insertTableConfirm()">Insert Table</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Global variables
+var editor = null;
+var previewFrame = null;
+var savedSelection = null;
+
+// Inject critical modal styles at runtime to override style.css
+(function() {
+    var style = document.createElement('style');
+    style.id = 'designer-modal-fix';
+    style.innerHTML = `
+        /* Critical modal fix - override style.css */
+        .modal-backdrop {
+            z-index: 99998 !important;
+            background-color: rgba(0, 0, 0, 0.5) !important;
+        }
+        #linkModal, #imageModal, #variableModal, #tableModal {
+            z-index: 99999 !important;
+            background: rgba(0, 0, 0, 0.5) !important;
+        }
+        #linkModal .modal-dialog, #imageModal .modal-dialog, 
+        #variableModal .modal-dialog, #tableModal .modal-dialog {
+            z-index: 100000 !important;
+            pointer-events: auto !important;
+        }
+        #linkModal .modal-content, #imageModal .modal-content,
+        #variableModal .modal-content, #tableModal .modal-content {
+            background: #ffffff !important;
+            pointer-events: auto !important;
+        }
+        #linkModal .modal-content *, #imageModal .modal-content *,
+        #variableModal .modal-content *, #tableModal .modal-content * {
+            pointer-events: auto !important;
+        }
+    `;
+    document.head.appendChild(style);
+})();
+
+// Initialize when DOM is ready
+document.addEventListener('DOMContentLoaded', function() {
+    editor = document.getElementById('emailEditor');
+    previewFrame = document.getElementById('previewFrame');
+    
+    // Initial preview and word count
+    updatePreview();
+    updateWordCount();
+    
+    // Fix modal backdrop z-index for all modals
+    var modals = document.querySelectorAll('#linkModal, #imageModal, #variableModal, #tableModal');
+    modals.forEach(function(modal) {
+        modal.addEventListener('show.bs.modal', function() {
+            // Fix backdrop z-index
+            setTimeout(function() {
+                var backdrops = document.querySelectorAll('.modal-backdrop');
+                backdrops.forEach(function(backdrop) {
+                    backdrop.style.zIndex = '99998';
+                    backdrop.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+                });
+            }, 10);
+        });
+    });
+    
+    // Auto-update preview and word count on editor changes
+    if (editor) {
+        editor.addEventListener('input', function() {
+            updatePreview();
+            updateWordCount();
+        });
+        
+        // Handle keyboard shortcuts
+        editor.addEventListener('keydown', function(e) {
+            if (e.ctrlKey || e.metaKey) {
+                switch(e.key.toLowerCase()) {
+                    case 'b':
+                        e.preventDefault();
+                        formatText('bold');
+                        break;
+                    case 'i':
+                        e.preventDefault();
+                        formatText('italic');
+                        break;
+                    case 'u':
+                        e.preventDefault();
+                        formatText('underline');
+                        break;
+                }
+            }
+        });
+    }
+});
+
+// Text Formatting
+function formatText(command) {
+    if (editor) {
+        editor.focus();
+        document.execCommand(command, false, null);
+        updatePreview();
+    }
+}
+
+function changeFont(font) {
+    if (editor) {
+        editor.focus();
+        document.execCommand('fontName', false, font);
+        updatePreview();
+    }
+}
+
+function changeFontSize(size) {
+    if (editor) {
+        editor.focus();
+        document.execCommand('fontSize', false, size);
+        updatePreview();
+    }
+}
+
+function changeTextColor(color) {
+    if (editor) {
+        editor.focus();
+        document.execCommand('foreColor', false, color);
+        updatePreview();
+    }
+}
+
+function changeHighlight(color) {
+    if (editor) {
+        editor.focus();
+        document.execCommand('hiliteColor', false, color);
+        updatePreview();
+    }
+}
+
+function changeBackground(color) {
+    if (editor) {
+        editor.style.backgroundColor = color;
+        updatePreview();
+    }
+}
+
+// Selection management
+function saveSelection() {
+    var sel = window.getSelection();
+    if (sel && sel.rangeCount > 0) {
+        savedSelection = sel.getRangeAt(0).cloneRange();
+    }
+}
+
+function restoreSelection() {
+    if (savedSelection) {
+        var sel = window.getSelection();
+        if (sel) {
+            sel.removeAllRanges();
+            sel.addRange(savedSelection);
+        }
+    }
+}
+
+// Insert Link
+function insertLink() {
+    saveSelection();
+    
+    document.getElementById('linkUrl').value = '';
+    document.getElementById('linkText').value = '';
+    document.getElementById('linkNewTab').checked = true;
+    
+    var sel = window.getSelection();
+    if (sel && sel.toString()) {
+        document.getElementById('linkText').value = sel.toString();
+    }
+    
+    var modalEl = document.getElementById('linkModal');
+    var modal = new bootstrap.Modal(modalEl);
+    modal.show();
+}
+
+function insertLinkConfirm() {
+    var url = document.getElementById('linkUrl').value.trim();
+    var text = document.getElementById('linkText').value.trim();
+    var newTab = document.getElementById('linkNewTab').checked;
+    
+    if (!url) {
+        alert('Please enter a URL');
+        return;
+    }
+    
+    var modalEl = document.getElementById('linkModal');
+    var modal = bootstrap.Modal.getInstance(modalEl);
+    if (modal) modal.hide();
+    
+    restoreSelection();
+    if (editor) editor.focus();
+    
+    var target = newTab ? ' target="_blank"' : '';
+    var linkHtml = '<a href="' + url + '"' + target + ' style="color: #1a73e8; text-decoration: underline;">' + (text || url) + '</a>';
+    document.execCommand('insertHTML', false, linkHtml);
+    
+    updatePreview();
+}
+
+// Insert Image
+function insertImage() {
+    saveSelection();
+    
+    document.getElementById('imageUrl').value = '';
+    document.getElementById('imageAlt').value = '';
+    document.getElementById('imageWidth').value = '100%';
+    document.getElementById('imageAlign').value = 'center';
+    
+    var modalEl = document.getElementById('imageModal');
+    var modal = new bootstrap.Modal(modalEl);
+    modal.show();
+}
+
+function insertImageConfirm() {
+    var url = document.getElementById('imageUrl').value.trim();
+    var alt = document.getElementById('imageAlt').value || 'Image';
+    var width = document.getElementById('imageWidth').value || '100%';
+    var align = document.getElementById('imageAlign').value;
+    
+    if (!url) {
+        alert('Please enter an image URL');
+        return;
+    }
+    
+    var modalEl = document.getElementById('imageModal');
+    var modal = bootstrap.Modal.getInstance(modalEl);
+    if (modal) modal.hide();
+    
+    restoreSelection();
+    if (editor) editor.focus();
+    
+    var alignStyle = '';
+    if (align === 'center') {
+        alignStyle = 'display: block; margin: 0 auto;';
+    } else if (align === 'left') {
+        alignStyle = 'float: left; margin: 0 15px 15px 0;';
+    } else if (align === 'right') {
+        alignStyle = 'float: right; margin: 0 0 15px 15px;';
+    }
+    
+    var imgHtml = '<img src="' + url + '" alt="' + alt + '" style="width: ' + width + '; max-width: 100%; height: auto; ' + alignStyle + '">';
+    document.execCommand('insertHTML', false, imgHtml);
+    
+    updatePreview();
+}
+
+// Insert Divider
+function insertDivider() {
+    if (editor) editor.focus();
+    document.execCommand('insertHTML', false, '<hr style="border: none; border-top: 2px solid #e0e0e0; margin: 20px 0; clear: both;">');
+    updatePreview();
+}
+
+// Insert Button
+function insertButton() {
+    var buttonText = prompt('Enter button text:', 'Click Here');
+    if (!buttonText) return;
+    
+    var buttonUrl = prompt('Enter button URL:', 'https://');
+    if (!buttonUrl) return;
+    
+    var buttonColor = prompt('Enter button color (blue/green/red/orange/purple):', 'blue') || 'blue';
+    
+    var colors = {
+        'blue': '#1a73e8',
+        'green': '#34a853',
+        'red': '#ea4335',
+        'orange': '#ff5722',
+        'purple': '#673ab7'
+    };
+    
+    var bgColor = colors[buttonColor] || colors['blue'];
+    
+    if (editor) editor.focus();
+    var buttonHtml = '<div style="text-align: center; margin: 25px 0;"><a href="' + buttonUrl + '" target="_blank" style="display: inline-block; padding: 14px 28px; background-color: ' + bgColor + '; color: #ffffff; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 16px;">' + buttonText + '</a></div>';
+    document.execCommand('insertHTML', false, buttonHtml);
+    updatePreview();
+}
+
+// Insert Table
+function insertTable() {
+    document.getElementById('tableRows').value = '3';
+    document.getElementById('tableCols').value = '3';
+    document.getElementById('tableHeaderStyle').value = 'primary';
+    
+    var modalEl = document.getElementById('tableModal');
+    var modal = new bootstrap.Modal(modalEl);
+    modal.show();
+}
+
+function insertTableConfirm() {
+    var rows = parseInt(document.getElementById('tableRows').value) || 3;
+    var cols = parseInt(document.getElementById('tableCols').value) || 3;
+    var headerStyle = document.getElementById('tableHeaderStyle').value;
+    
+    var headerColors = {
+        'primary': '#1a73e8',
+        'success': '#34a853',
+        'warning': '#fbbc04',
+        'danger': '#ea4335',
+        'dark': '#333333'
+    };
+    
+    var headerBg = headerColors[headerStyle] || headerColors['primary'];
+    
+    var modalEl = document.getElementById('tableModal');
+    var modal = bootstrap.Modal.getInstance(modalEl);
+    if (modal) modal.hide();
+    
+    if (editor) editor.focus();
+    
+    var tableHtml = '<table style="width: 100%; border-collapse: collapse; margin: 15px 0;">';
+    
+    // Header row
+    tableHtml += '<tr>';
+    for (var c = 0; c < cols; c++) {
+        tableHtml += '<th style="background-color: ' + headerBg + '; color: white; padding: 12px; border: 1px solid #ddd; text-align: left;">Header ' + (c + 1) + '</th>';
+    }
+    tableHtml += '</tr>';
+    
+    // Data rows
+    for (var r = 1; r < rows; r++) {
+        tableHtml += '<tr>';
+        for (var c = 0; c < cols; c++) {
+            tableHtml += '<td style="padding: 10px; border: 1px solid #ddd;">Cell ' + r + '-' + (c + 1) + '</td>';
+        }
+        tableHtml += '</tr>';
+    }
+    
+    tableHtml += '</table>';
+    
+    document.execCommand('insertHTML', false, tableHtml);
+    updatePreview();
+}
+
+// Insert Variable
+function insertVariable() {
+    saveSelection();
+    
+    document.getElementById('variableName').value = '';
+    
+    var modalEl = document.getElementById('variableModal');
+    var modal = new bootstrap.Modal(modalEl);
+    modal.show();
+}
+
+function setVariable(name) {
+    document.getElementById('variableName').value = name;
+}
+
+function insertVariableConfirm() {
+    var name = document.getElementById('variableName').value.trim();
+    
+    if (!name) {
+        alert('Please enter a variable name');
+        return;
+    }
+    
+    var modalEl = document.getElementById('variableModal');
+    var modal = bootstrap.Modal.getInstance(modalEl);
+    if (modal) modal.hide();
+    
+    restoreSelection();
+    if (editor) editor.focus();
+    
+    var varHtml = '<span style="background-color: #e3f2fd; padding: 2px 8px; border-radius: 4px; font-family: monospace; color: #1565c0; border: 1px dashed #90caf9;">{{' + name + '}}</span>';
+    document.execCommand('insertHTML', false, varHtml);
+    
+    updatePreview();
+    updateWordCount();
+}
+
+function insertVariableAtCursor(name) {
+    if (editor) editor.focus();
+    var varHtml = '<span style="background-color: #e3f2fd; padding: 2px 8px; border-radius: 4px; font-family: monospace; color: #1565c0; border: 1px dashed #90caf9;">{{' + name + '}}</span>';
+    document.execCommand('insertHTML', false, varHtml);
+    updatePreview();
+    updateWordCount();
+}
+
+// Layout Templates
+function insertLayout(type) {
+    var layoutHtml = '';
+    
+    if (type === 'header-body-footer') {
+        layoutHtml = `
+<div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px 20px; text-align: center; border-radius: 10px 10px 0 0;">
+    <h1 style="margin: 0; font-size: 28px;">Your Header Here</h1>
+    <p style="margin: 10px 0 0 0; opacity: 0.9;">Subtitle or tagline</p>
+</div>
+<div style="padding: 30px 20px; background: #ffffff;">
+    <h2 style="color: #333; margin-top: 0;">Hello {{recipient_name}},</h2>
+    <p style="color: #666; line-height: 1.8;">Your main content goes here. Write your message and use variables like {{sender_name}} to personalize your emails.</p>
+    <p style="color: #666; line-height: 1.8;">You can add more paragraphs, images, and other elements using the toolbar.</p>
+</div>
+<div style="background: #f5f5f5; padding: 20px; text-align: center; border-radius: 0 0 10px 10px;">
+    <p style="margin: 0; color: #666; font-size: 14px;">© 2026 Your Company. All rights reserved.</p>
+    <p style="margin: 5px 0 0 0; font-size: 12px;">
+        <a href="#" style="color: #667eea; text-decoration: none;">Website</a> | 
+        <a href="#" style="color: #667eea; text-decoration: none;">Unsubscribe</a>
+    </p>
+</div>`;
+    } else if (type === 'two-column') {
+        layoutHtml = `
+<div style="padding: 20px; background: #ffffff;">
+    <table style="width: 100%; border-collapse: collapse;">
+        <tr>
+            <td style="width: 50%; padding: 15px; vertical-align: top;">
+                <h3 style="color: #667eea; margin-top: 0;">Column One</h3>
+                <p style="color: #666; line-height: 1.6;">Content for the first column. Add your text, images, or other elements here.</p>
+                <a href="#" style="color: #667eea;">Learn More →</a>
+            </td>
+            <td style="width: 50%; padding: 15px; vertical-align: top; border-left: 1px solid #eee;">
+                <h3 style="color: #764ba2; margin-top: 0;">Column Two</h3>
+                <p style="color: #666; line-height: 1.6;">Content for the second column. Great for comparisons or feature highlights.</p>
+                <a href="#" style="color: #764ba2;">Learn More →</a>
+            </td>
+        </tr>
+    </table>
+</div>`;
+    } else if (type === 'hero-banner') {
+        layoutHtml = `
+<div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 60px 30px; text-align: center; border-radius: 10px;">
+    <h1 style="margin: 0 0 15px 0; font-size: 36px; text-shadow: 2px 2px 4px rgba(0,0,0,0.2);">Your Hero Title</h1>
+    <p style="margin: 0 0 30px 0; font-size: 20px; opacity: 0.95;">A compelling subtitle that captures attention</p>
+    <a href="#" style="display: inline-block; padding: 15px 40px; background-color: white; color: #667eea; text-decoration: none; border-radius: 30px; font-weight: bold; font-size: 18px; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">Call to Action</a>
+</div>
+<div style="padding: 30px; text-align: center;">
+    <p style="color: #666; font-size: 16px;">Additional content below the hero section</p>
+</div>`;
+    } else if (type === 'call-to-action') {
+        layoutHtml = `
+<div style="text-align: center; padding: 50px 30px; background: linear-gradient(135deg, #f5f7fa 0%, #e4e8ec 100%); border-radius: 10px;">
+    <h2 style="color: #333; margin-top: 0; font-size: 32px;">Ready to Get Started?</h2>
+    <p style="color: #666; margin-bottom: 30px; font-size: 18px;">Join thousands of satisfied customers today!</p>
+    <div style="margin: 20px 0;">
+        <a href="#" style="display: inline-block; padding: 18px 45px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; text-decoration: none; border-radius: 30px; font-weight: bold; font-size: 18px; margin: 5px;">Get Started Now</a>
+        <a href="#" style="display: inline-block; padding: 18px 45px; background: transparent; color: #667eea; text-decoration: none; border-radius: 30px; font-weight: bold; font-size: 18px; border: 2px solid #667eea; margin: 5px;">Learn More</a>
+    </div>
+</div>`;
+    } else if (type === 'newsletter') {
+        layoutHtml = `
+<div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 25px 20px; text-align: center; border-radius: 10px 10px 0 0;">
+    <h1 style="margin: 0; font-size: 24px;">📰 Newsletter Title</h1>
+    <p style="margin: 5px 0 0 0; opacity: 0.9;">{{date}}</p>
+</div>
+<div style="padding: 25px; background: #ffffff;">
+    <h2 style="color: #667eea; margin-top: 0; border-bottom: 2px solid #667eea; padding-bottom: 10px;">Featured Article</h2>
+    <p style="color: #666; line-height: 1.8;">Your featured article summary goes here. Make it engaging and informative to capture your readers' attention.</p>
+    <a href="#" style="color: #667eea; font-weight: bold;">Read More →</a>
+    
+    <hr style="border: none; border-top: 1px solid #eee; margin: 25px 0;">
+    
+    <h3 style="color: #764ba2;">Quick Updates</h3>
+    <ul style="color: #666; line-height: 2;">
+        <li>Update 1: Brief description of news</li>
+        <li>Update 2: Another important update</li>
+        <li>Update 3: Something exciting</li>
+    </ul>
+</div>
+<div style="background: #f8f9fa; padding: 20px; text-align: center; border-radius: 0 0 10px 10px;">
+    <p style="margin: 0; color: #666; font-size: 14px;">You received this email because you subscribed to our newsletter.</p>
+</div>`;
+    } else if (type === 'invitation') {
+        layoutHtml = `
+<div style="text-align: center; padding: 40px 30px; border: 3px solid #667eea; border-radius: 15px; background: linear-gradient(135deg, #f5f7fa 0%, #ffffff 100%);">
+    <div style="font-size: 50px; margin-bottom: 15px;">🎉</div>
+    <h1 style="color: #667eea; margin-bottom: 10px; font-size: 32px;">You're Invited!</h1>
+    <h2 style="color: #333; margin-bottom: 25px; font-size: 24px;">{{event_name}}</h2>
+    
+    <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin: 20px 0;">
+        <p style="font-size: 18px; color: #333; margin: 10px 0;">
+            <strong>📅 Date:</strong> {{event_date}}<br>
+            <strong>⏰ Time:</strong> {{event_time}}<br>
+            <strong>📍 Location:</strong> {{event_location}}
+        </p>
+    </div>
+    
+    <p style="color: #666; margin: 20px 0;">We hope you can join us for this special event!</p>
+    
+    <div style="margin-top: 30px;">
+        <a href="#" style="display: inline-block; padding: 15px 35px; background-color: #34a853; color: white; text-decoration: none; border-radius: 25px; font-weight: bold; margin: 5px;">✓ Accept</a>
+        <a href="#" style="display: inline-block; padding: 15px 35px; background-color: #ea4335; color: white; text-decoration: none; border-radius: 25px; font-weight: bold; margin: 5px;">✗ Decline</a>
+    </div>
+</div>`;
+    }
+    
+    if (editor && layoutHtml) {
+        editor.innerHTML = layoutHtml;
+        updatePreview();
+        updateWordCount();
+    }
+}
+
+// Color Scheme
+function applyColorScheme(primary, secondary) {
+    document.getElementById('textColor').value = primary;
+    if (editor) {
+        editor.focus();
+        document.execCommand('foreColor', false, primary);
+        updatePreview();
+    }
+}
+
+// Preview
+function updatePreview() {
+    if (previewFrame && editor) {
+        previewFrame.innerHTML = editor.innerHTML;
+    }
+}
+
+function previewDevice(device) {
+    var buttons = document.querySelectorAll('.device-btn');
+    buttons.forEach(function(btn) {
+        btn.classList.remove('active');
+    });
+    
+    event.target.closest('.device-btn').classList.add('active');
+    
+    if (device === 'desktop') {
+        if (previewFrame) {
+            previewFrame.style.width = '100%';
+            previewFrame.style.transform = 'scale(1)';
+            previewFrame.style.height = 'auto';
+        }
+    } else if (device === 'tablet') {
+        if (previewFrame) {
+            previewFrame.style.width = '768px';
+            previewFrame.style.transform = 'scale(0.9)';
+            previewFrame.style.transformOrigin = 'top left';
+            previewFrame.style.minHeight = '300px';
+        }
+    } else if (device === 'mobile') {
+        if (previewFrame) {
+            previewFrame.style.width = '375px';
+            previewFrame.style.transform = 'scale(0.85)';
+            previewFrame.style.transformOrigin = 'top left';
+            previewFrame.style.minHeight = '300px';
+        }
+    }
+    
+    updatePreview();
+}
+
+// Word Count
+function updateWordCount() {
+    if (editor) {
+        var text = editor.innerText || '';
+        var words = text.trim().split(/\s+/).filter(function(w) { return w.length > 0; }).length;
+        var chars = text.length;
+        
+        document.getElementById('wordCount').textContent = 'Words: ' + words + ' | Characters: ' + chars;
+        
+        // Count variables
+        var varMatches = editor.innerHTML.match(/\{\{(\w+)\}\}/g);
+        var varCount = varMatches ? varMatches.length : 0;
+        document.getElementById('variableCount').textContent = 'Variables: ' + varCount;
+    }
+}
+
+// Undo/Redo
+function undoAction() {
+    document.execCommand('undo', false, null);
+    updatePreview();
+}
+
+function redoAction() {
+    document.execCommand('redo', false, null);
+    updatePreview();
+}
+
+function clearEditor() {
+    if (confirm('Are you sure you want to clear all content? This cannot be undone.')) {
+        if (editor) {
+            editor.innerHTML = '<p style="color: #999; text-align: center; padding: 40px;">Start typing your email here...</p>';
+            updatePreview();
+            updateWordCount();
+        }
+    }
+}
+
+// Export
+function exportHTML() {
+    var subject = document.getElementById('subjectLine').value || 'Email Template';
+    var html = '<!DOCTYPE html>\n<html>\n<head>\n    <meta charset="UTF-8">\n    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n    <title>' + subject + '</title>\n</head>\n<body style="margin: 0; padding: 20px; font-family: Arial, sans-serif; background-color: #f5f5f5;">\n    <div style="max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 10px; overflow: hidden;">\n' + (editor ? editor.innerHTML : '') + '\n    </div>\n</body>\n</html>';
+    
+    var blob = new Blob([html], { type: 'text/html' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = 'email_template_' + Date.now() + '.html';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
+
+function exportText() {
+    var text = editor ? editor.innerText : '';
+    var blob = new Blob([text], { type: 'text/plain' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = 'email_template_' + Date.now() + '.txt';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
+
+function copyToClipboard() {
+    if (editor) {
+        navigator.clipboard.writeText(editor.innerHTML).then(function() {
+            // Show success feedback
+            var btn = event.target.closest('button');
+            var originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-check me-1"></i>Copied!';
+            btn.classList.remove('btn-outline-info');
+            btn.classList.add('btn-success');
+            setTimeout(function() {
+                btn.innerHTML = originalText;
+                btn.classList.remove('btn-success');
+                btn.classList.add('btn-outline-info');
+            }, 2000);
+        }).catch(function(err) {
+            alert('Failed to copy: ' + err);
+        });
+    }
+}
+
+// Use Template - redirect to compose with template data
+function useTemplate() {
+    var name = document.querySelector('input[name="name"]').value.trim();
+    var subject = document.getElementById('subjectLine').value.trim();
+    var body = editor ? editor.innerHTML : '';
+    
+    if (!name) {
+        alert('Please enter a template name');
+        return;
+    }
+    if (!subject) {
+        alert('Please enter an email subject');
+        return;
+    }
+    if (!body || editor.innerText.trim() === '') {
+        alert('Please design your email template first');
+        return;
+    }
+    
+    // Store template data in sessionStorage and redirect to compose
+    sessionStorage.setItem('templateSubject', subject);
+    sessionStorage.setItem('templateBody', body);
+    window.location.href = '{{ url_for("client.compose") }}?use_template=true';
+}
+
+// Form submission
+var templateForm = document.getElementById('templateForm');
+if (templateForm) {
+    templateForm.addEventListener('submit', function(e) {
+        var bodyContent = document.getElementById('bodyContent');
+        if (bodyContent && editor) {
+            bodyContent.value = editor.innerHTML;
+        }
+    });
+}
+</script>
+{% endblock %}

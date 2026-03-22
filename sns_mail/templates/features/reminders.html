@@ -1,0 +1,384 @@
+{% extends "base.html" %}
+
+{% block title %}Follow-up Reminders - SNS Mail{% endblock %}
+
+{% block extra_css %}
+<style>
+.event-card {
+    background: rgba(10, 10, 20, 0.5);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 15px;
+    margin-bottom: 10px;
+    transition: all 0.3s;
+}
+.event-card:hover {
+    background: rgba(0, 212, 255, 0.05);
+    border-color: rgba(0, 212, 255, 0.3);
+    transform: translateX(5px);
+}
+.event-type-badge {
+    padding: 3px 10px;
+    border-radius: 15px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+.type-event { background: rgba(0, 212, 255, 0.2); color: #00d4ff; }
+.type-meeting { background: rgba(139, 92, 246, 0.2); color: #8b5cf6; }
+.type-reminder { background: rgba(245, 158, 11, 0.2); color: #f59e0b; }
+.type-task { background: rgba(16, 185, 129, 0.2); color: #10b981; }
+.reminder-badge {
+    font-size: 0.7rem;
+    padding: 2px 8px;
+    border-radius: 10px;
+    margin-right: 5px;
+}
+.timer-display {
+    font-family: 'Orbitron', monospace;
+    font-size: 0.9rem;
+    color: var(--cyan);
+}
+.notification-card {
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    border-radius: 10px;
+    padding: 12px;
+    margin-bottom: 8px;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h2 class="mb-4">
+            <i class="fas fa-bell text-primary"></i>
+            Follow-up Reminders
+            <span class="badge bg-warning">New Feature!</span>
+        </h2>
+        <p class="text-muted">Never forget to follow up on important emails, tasks, and events.</p>
+    </div>
+</div>
+
+<!-- Create Reminder -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Create New Reminder</h5>
+            </div>
+            <div class="card-body">
+                <form action="{{ url_for('features.create_reminder') }}" method="POST">
+                    <div class="row">
+                        <div class="col-md-4 mb-2">
+                            <input type="datetime-local" name="reminder_at" class="form-control" required>
+                        </div>
+                        <div class="col-md-4 mb-2">
+                            <input type="text" name="notes" class="form-control" placeholder="Reminder notes...">
+                        </div>
+                        <div class="col-md-4 mb-2">
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="fas fa-plus"></i> Create Reminder
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Event Notifications -->
+{% if event_notifications %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card border-danger">
+            <div class="card-header bg-danger bg-opacity-10">
+                <h5 class="mb-0 text-danger">
+                    <i class="fas fa-exclamation-circle me-2"></i>
+                    Event Notifications
+                    <span class="badge bg-danger">{{ event_notifications|length }}</span>
+                </h5>
+            </div>
+            <div class="card-body">
+                {% for notification in event_notifications %}
+                <div class="notification-card">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>{{ notification.title }}</strong>
+                            <p class="mb-0 small text-muted">{{ notification.message }}</p>
+                        </div>
+                        <div>
+                            <a href="{{ url_for('features.view_event', event_id=notification.event_id) }}" class="btn btn-sm btn-primary">
+                                View Event
+                            </a>
+                            <button class="btn btn-sm btn-outline-secondary mark-read-btn" data-id="{{ notification.id }}">
+                                <i class="fas fa-check"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Upcoming Events with Reminders -->
+{% if upcoming_events %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card border-info">
+            <div class="card-header bg-info bg-opacity-10">
+                <h5 class="mb-0 text-info">
+                    <i class="fas fa-calendar-alt me-2"></i>
+                    Upcoming Events with Reminders
+                    <span class="badge bg-info">{{ upcoming_events|length }}</span>
+                </h5>
+            </div>
+            <div class="card-body">
+                {% for event in upcoming_events %}
+                <div class="event-card" onclick="window.location.href='/features/calendar/event/{{ event.id }}'">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div class="flex-grow-1">
+                            <div class="d-flex align-items-center gap-2 mb-2">
+                                <span class="event-type-badge type-{{ event.event_type }}">
+                                    <i class="fas fa-{% if event.is_meeting %}video{% elif event.event_type == 'reminder' %}bell{% elif event.event_type == 'task' %}tasks{% else %}calendar{% endif %} me-1"></i>
+                                    {{ event.event_type|title }}
+                                </span>
+                                {% if event.is_meeting %}
+                                <span class="badge bg-purple"><i class="fas fa-video me-1"></i>Meeting</span>
+                                {% endif %}
+                            </div>
+                            <h6 class="mb-1" style="color: {{ event.color }};">{{ event.title }}</h6>
+                            <div class="small text-muted">
+                                <i class="fas fa-clock me-1"></i>
+                                {{ event.start_time.strftime('%A, %B %d at %I:%M %p') }}
+                                {% if event.location %}
+                                <span class="ms-2"><i class="fas fa-map-marker-alt me-1"></i>{{ event.location }}</span>
+                                {% endif %}
+                            </div>
+                            <div class="mt-2">
+                                {% if event.reminder_one_day %}
+                                <span class="reminder-badge bg-success text-white">
+                                    <i class="fas fa-calendar-day me-1"></i>1 Day Before
+                                </span>
+                                {% endif %}
+                                {% if event.reminder_one_hour %}
+                                <span class="reminder-badge bg-warning text-dark">
+                                    <i class="fas fa-clock me-1"></i>1 Hour Before
+                                </span>
+                                {% endif %}
+                                {% if event.reminder_custom %}
+                                <span class="reminder-badge bg-info text-white">
+                                    <i class="fas fa-stopwatch me-1"></i>{{ event.reminder_custom }} min Before
+                                </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="text-end">
+                            <div class="timer-display" id="event-timer-{{ event.id }}" data-start="{{ event.start_time.isoformat() }}">
+                                --:--:--
+                            </div>
+                            <small class="text-muted">until event</small>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+                <div class="text-center mt-3">
+                    <a href="{{ url_for('features.calendar') }}" class="btn btn-outline-info">
+                        <i class="fas fa-calendar me-1"></i> View Full Calendar
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Active Reminders -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Active Reminders</h5>
+            </div>
+            <div class="card-body">
+                {% if active_reminders %}
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Reminder At</th>
+                                    <th>Notes</th>
+                                    <th>Linked To</th>
+                                    <th>Snoozed</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for reminder in active_reminders %}
+                                    <tr>
+                                        <td>
+                                            <span class="badge bg-primary">
+                                                {{ reminder.reminder_at.strftime('%Y-%m-%d %H:%M') }}
+                                            </span>
+                                        </td>
+                                        <td>{{ reminder.notes or '-' }}</td>
+                                        <td>
+                                            {% if reminder.email_id %}
+                                                <a href="{{ url_for('client.view_email', email_id=reminder.email_id) }}" class="btn btn-sm btn-outline-info">
+                                                    <i class="fas fa-envelope"></i> Email
+                                                </a>
+                                            {% elif reminder.task_id %}
+                                                <a href="{{ url_for('features.view_task', task_id=reminder.task_id) }}" class="btn btn-sm btn-outline-warning">
+                                                    <i class="fas fa-tasks"></i> Task
+                                                </a>
+                                            {% else %}
+                                                <span class="text-muted">-</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ reminder.snooze_count }}</td>
+                                        <td>
+                                            <button class="btn btn-sm btn-info snooze-btn" data-id="{{ reminder.id }}">
+                                                <i class="fas fa-clock"></i> Snooze
+                                            </button>
+                                            <button class="btn btn-sm btn-success dismiss-btn" data-id="{{ reminder.id }}">
+                                                <i class="fas fa-check"></i> Done
+                                            </button>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted text-center">No active reminders.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Past Reminders -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Past Reminders</h5>
+            </div>
+            <div class="card-body">
+                {% if past_reminders %}
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Reminder At</th>
+                                    <th>Notes</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for reminder in past_reminders %}
+                                    <tr>
+                                        <td>{{ reminder.reminder_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                                        <td>{{ reminder.notes or '-' }}</td>
+                                        <td>
+                                            {% if reminder.reminder_sent %}
+                                                <span class="badge bg-success">Sent</span>
+                                            {% elif reminder.is_dismissed %}
+                                                <span class="badge bg-secondary">Dismissed</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted text-center">No past reminders.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Update event timers
+function updateEventTimers() {
+    document.querySelectorAll('[id^="event-timer-"]').forEach(timer => {
+        const startTime = new Date(timer.dataset.start);
+        const now = new Date();
+        const diff = startTime - now;
+        
+        if (diff > 0) {
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+            
+            if (days > 0) {
+                timer.textContent = `${days}d ${hours}h ${minutes}m`;
+            } else {
+                timer.textContent = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+            }
+        } else {
+            timer.textContent = 'NOW';
+            timer.style.color = '#ef4444';
+        }
+    });
+}
+
+// Snooze buttons
+document.querySelectorAll('.snooze-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const id = this.dataset.id;
+        fetch('/features/reminders/' + id + '/snooze', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            body: 'minutes=30'
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) location.reload();
+        });
+    });
+});
+
+// Dismiss buttons
+document.querySelectorAll('.dismiss-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const id = this.dataset.id;
+        fetch('/features/reminders/' + id + '/dismiss', {
+            method: 'POST'
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) location.reload();
+        });
+    });
+});
+
+// Mark notification as read
+document.querySelectorAll('.mark-read-btn').forEach(btn => {
+    btn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        const id = this.dataset.id;
+        fetch('/features/calendar/notification/' + id + '/read', {
+            method: 'POST'
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) location.reload();
+        });
+    });
+});
+
+// Start timer updates
+setInterval(updateEventTimers, 1000);
+updateEventTimers();
+</script>
+{% endblock %}

@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+
+{% block title %}Focus Mode - SNS Mail{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h2 class="mb-4">
+            <i class="fas fa-brain text-primary"></i>
+            Focus Mode
+            <span class="badge bg-success">New Feature!</span>
+        </h2>
+        <p class="text-muted">Distraction-free email management. Block notifications and focus on what matters.</p>
+    </div>
+</div>
+
+{% if active_session %}
+<!-- Active Focus Session -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card bg-success text-white">
+            <div class="card-body text-center py-5">
+                <i class="fas fa-brain fa-4x mb-3"></i>
+                <h2>Focus Session Active</h2>
+                <p class="lead">Started at {{ active_session.started_at.strftime('%H:%M') }}</p>
+                <p>Notifications are blocked. Stay focused!</p>
+                <form action="{{ url_for('features.end_focus_session') }}" method="POST">
+                    <button type="submit" class="btn btn-light btn-lg">
+                        <i class="fas fa-stop"></i> End Focus Session
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% else %}
+<!-- Start Focus Session -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body text-center py-5">
+                <i class="fas fa-brain fa-4x text-muted mb-3"></i>
+                <h3>Ready to Focus?</h3>
+                <p class="text-muted">Start a focus session to block notifications and concentrate on your emails.</p>
+                <form action="{{ url_for('features.start_focus_session') }}" method="POST">
+                    <button type="submit" class="btn btn-success btn-lg">
+                        <i class="fas fa-play"></i> Start Focus Session
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Stats -->
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card bg-primary text-white">
+            <div class="card-body text-center">
+                <h3>{{ total_focus_time }}</h3>
+                <small>Total Focus Minutes</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card bg-info text-white">
+            <div class="card-body text-center">
+                <h3>{{ total_sessions }}</h3>
+                <small>Total Sessions</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card bg-warning text-white">
+            <div class="card-body text-center">
+                <h3>{% if total_sessions > 0 %}{{ (total_focus_time / total_sessions)|round(1) }}{% else %}0{% endif %}</h3>
+                <small>Avg Minutes/Session</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Sessions -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Recent Focus Sessions</h5>
+            </div>
+            <div class="card-body">
+                {% if recent_sessions %}
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Duration</th>
+                                    <th>Emails Processed</th>
+                                    <th>Tasks Completed</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for session in recent_sessions %}
+                                    <tr>
+                                        <td>{{ session.started_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                                        <td>{{ session.duration_minutes }} min</td>
+                                        <td>{{ session.emails_processed }}</td>
+                                        <td>{{ session.tasks_completed }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted text-center">No focus sessions yet. Start your first one!</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

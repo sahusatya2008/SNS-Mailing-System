@@ -1,0 +1,620 @@
+{% extends "base.html" %}
+
+{% block title %}Email Templates - SNS Mail{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h2 class="mb-2">
+            <i class="fas fa-file-alt text-primary"></i>
+            Email Templates
+        </h2>
+        <p class="text-muted mb-4">Create and manage reusable email templates with dynamic variables for efficient communication.</p>
+    </div>
+</div>
+
+<!-- Action Bar -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="input-group">
+            <span class="input-group-text"><i class="fas fa-search"></i></span>
+            <input type="text" class="form-control" id="searchTemplates" placeholder="Search templates...">
+        </div>
+    </div>
+    <div class="col-md-6 text-end">
+        <a href="{{ url_for('features.template_designer') }}" class="btn btn-success me-2">
+            <i class="fas fa-palette me-2"></i>Template Designer
+        </a>
+        <a href="{{ url_for('features.create_template') }}" class="btn btn-primary">
+            <i class="fas fa-plus me-2"></i>Quick Template
+        </a>
+    </div>
+</div>
+
+<!-- Category Filter -->
+<div class="row mb-3">
+    <div class="col-12">
+        <div class="btn-group" role="group" id="categoryFilter">
+            <button type="button" class="btn btn-outline-primary active" data-category="all">All</button>
+            <button type="button" class="btn btn-outline-primary" data-category="business">Business</button>
+            <button type="button" class="btn btn-outline-primary" data-category="personal">Personal</button>
+            <button type="button" class="btn btn-outline-primary" data-category="followup">Follow-up</button>
+            <button type="button" class="btn btn-outline-primary" data-category="professional">Professional</button>
+            <button type="button" class="btn btn-outline-primary" data-category="marketing">Marketing</button>
+        </div>
+    </div>
+</div>
+
+<!-- Sample Templates Section -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card bg-light">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-star text-warning me-2"></i>Professional Sample Templates</h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted small mb-3">Click on any sample template to use it as a starting point for your own template.</p>
+                <div class="row">
+                    <!-- Sample Template 1: Meeting Request -->
+                    <div class="col-md-4 mb-3">
+                        <div class="card h-100 template-card sample-template" data-category="business" data-name="Meeting Request">
+                            <div class="card-header bg-primary text-white">
+                                <h6 class="mb-0"><i class="fas fa-calendar-alt me-2"></i>Meeting Request</h6>
+                            </div>
+                            <div class="card-body">
+                                <p class="small text-muted mb-2">Subject: Meeting Request - {{topic}}</p>
+                                <p class="small">Dear {{recipient_name}},</p>
+                                <p class="small">I hope this email finds you well. I would like to request a meeting to discuss {{topic}} at your earliest convenience.</p>
+                                <p class="small">Proposed date/time: {{proposed_datetime}}</p>
+                                <p class="small">Duration: {{duration}}</p>
+                                <p class="small">Please let me know if this works for you or suggest an alternative time.</p>
+                                <p class="small mb-0">Best regards,<br>{{your_name}}</p>
+                            </div>
+                            <div class="card-footer">
+                                <small class="text-muted"><i class="fas fa-tags me-1"></i>Business</small>
+                                <button class="btn btn-sm btn-primary float-end use-sample-template" 
+                                    data-template-id="meeting-request">
+                                    <i class="fas fa-copy me-1"></i>Use Template
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Sample Template 2: Job Application -->
+                    <div class="col-md-4 mb-3">
+                        <div class="card h-100 template-card sample-template" data-category="professional" data-name="Job Application">
+                            <div class="card-header bg-success text-white">
+                                <h6 class="mb-0"><i class="fas fa-briefcase me-2"></i>Job Application</h6>
+                            </div>
+                            <div class="card-body">
+                                <p class="small text-muted mb-2">Subject: Application for {{position}} - {{your_name}}</p>
+                                <p class="small">Dear Hiring Manager,</p>
+                                <p class="small">I am writing to express my interest in the {{position}} position at {{company_name}}. With my background in {{your_field}} and {{years_experience}} years of experience, I am confident in my ability to contribute to your team.</p>
+                                <p class="small">I have attached my resume for your review. I would welcome the opportunity to discuss how my skills align with your needs.</p>
+                                <p class="small mb-0">Thank you for your consideration.<br><br>Sincerely,<br>{{your_name}}<br>{{your_phone}}<br>{{your_email}}</p>
+                            </div>
+                            <div class="card-footer">
+                                <small class="text-muted"><i class="fas fa-tags me-1"></i>Professional</small>
+                                <button class="btn btn-sm btn-success float-end use-sample-template" 
+                                    data-template-id="job-application">
+                                    <i class="fas fa-copy me-1"></i>Use Template
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Sample Template 3: Follow-up -->
+                    <div class="col-md-4 mb-3">
+                        <div class="card h-100 template-card sample-template" data-category="followup" data-name="Follow-up Email">
+                            <div class="card-header bg-warning text-dark">
+                                <h6 class="mb-0"><i class="fas fa-reply me-2"></i>Follow-up Email</h6>
+                            </div>
+                            <div class="card-body">
+                                <p class="small text-muted mb-2">Subject: Following up on {{subject}}</p>
+                                <p class="small">Dear {{recipient_name}},</p>
+                                <p class="small">I wanted to follow up on our previous conversation regarding {{subject}}. As discussed, I wanted to check if there have been any updates.</p>
+                                <p class="small">Please let me know if you need any additional information from my end.</p>
+                                <p class="small mb-0">Looking forward to hearing from you.<br><br>Best regards,<br>{{your_name}}</p>
+                            </div>
+                            <div class="card-footer">
+                                <small class="text-muted"><i class="fas fa-tags me-1"></i>Follow-up</small>
+                                <button class="btn btn-sm btn-warning float-end use-sample-template" 
+                                    data-template-id="follow-up">
+                                    <i class="fas fa-copy me-1"></i>Use Template
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Sample Template 4: Thank You -->
+                    <div class="col-md-4 mb-3">
+                        <div class="card h-100 template-card sample-template" data-category="personal" data-name="Thank You Note">
+                            <div class="card-header bg-info text-white">
+                                <h6 class="mb-0"><i class="fas fa-heart me-2"></i>Thank You Note</h6>
+                            </div>
+                            <div class="card-body">
+                                <p class="small text-muted mb-2">Subject: Thank You!</p>
+                                <p class="small">Dear {{recipient_name}},</p>
+                                <p class="small">I wanted to take a moment to express my sincere gratitude for {{what_for}}. Your {{gesture_type}} meant a lot to me.</p>
+                                <p class="small">I truly appreciate your thoughtfulness and support.</p>
+                                <p class="small mb-0">With warm regards,<br>{{your_name}}</p>
+                            </div>
+                            <div class="card-footer">
+                                <small class="text-muted"><i class="fas fa-tags me-1"></i>Personal</small>
+                                <button class="btn btn-sm btn-info float-end use-sample-template" 
+                                    data-template-id="thank-you">
+                                    <i class="fas fa-copy me-1"></i>Use Template
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Sample Template 5: Project Update -->
+                    <div class="col-md-4 mb-3">
+                        <div class="card h-100 template-card sample-template" data-category="business" data-name="Project Update">
+                            <div class="card-header bg-secondary text-white">
+                                <h6 class="mb-0"><i class="fas fa-tasks me-2"></i>Project Update</h6>
+                            </div>
+                            <div class="card-body">
+                                <p class="small text-muted mb-2">Subject: Project Update - {{project_name}}</p>
+                                <p class="small">Dear {{recipient_name}},</p>
+                                <p class="small">Here is the latest update on {{project_name}}:</p>
+                                <p class="small"><strong>Status:</strong> {{status}}<br>
+                                <strong>Progress:</strong> {{progress}}%<br>
+                                <strong>Next Steps:</strong> {{next_steps}}</p>
+                                <p class="small">Please let me know if you have any questions or concerns.</p>
+                                <p class="small mb-0">Best regards,<br>{{your_name}}</p>
+                            </div>
+                            <div class="card-footer">
+                                <small class="text-muted"><i class="fas fa-tags me-1"></i>Business</small>
+                                <button class="btn btn-sm btn-secondary float-end use-sample-template" 
+                                    data-template-id="project-update">
+                                    <i class="fas fa-copy me-1"></i>Use Template
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Sample Template 6: Introduction -->
+                    <div class="col-md-4 mb-3">
+                        <div class="card h-100 template-card sample-template" data-category="professional" data-name="Professional Introduction">
+                            <div class="card-header bg-dark text-white">
+                                <h6 class="mb-0"><i class="fas fa-handshake me-2"></i>Introduction</h6>
+                            </div>
+                            <div class="card-body">
+                                <p class="small text-muted mb-2">Subject: Introduction - {{your_name}}</p>
+                                <p class="small">Dear {{recipient_name}},</p>
+                                <p class="small">I hope this email finds you well. My name is {{your_name}} and I am the {{your_title}} at {{your_company}}.</p>
+                                <p class="small">I am reaching out because {{reason_for_contact}}. I would love the opportunity to connect and discuss how we might {{potential_collaboration}}.</p>
+                                <p class="small mb-0">I look forward to hearing from you.<br><br>Best regards,<br>{{your_name}}<br>{{your_company}}<br>{{your_phone}}</p>
+                            </div>
+                            <div class="card-footer">
+                                <small class="text-muted"><i class="fas fa-tags me-1"></i>Professional</small>
+                                <button class="btn btn-sm btn-dark float-end use-sample-template" 
+                                    data-template-id="introduction">
+                                    <i class="fas fa-copy me-1"></i>Use Template
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sample Template 7: Marketing Newsletter -->
+                    <div class="col-md-4 mb-3">
+                        <div class="card h-100 template-card sample-template" data-category="marketing" data-name="Marketing Newsletter">
+                            <div class="card-header bg-danger text-white">
+                                <h6 class="mb-0"><i class="fas fa-bullhorn me-2"></i>Marketing Newsletter</h6>
+                            </div>
+                            <div class="card-body">
+                                <p class="small text-muted mb-2">Subject: {{newsletter_title}} - {{company_name}}</p>
+                                <p class="small">Dear {{recipient_name}},</p>
+                                <p class="small">Welcome to our monthly newsletter! Here's what's new at {{company_name}}:</p>
+                                <p class="small"><strong>{{feature_title}}</strong><br>{{feature_description}}</p>
+                                <p class="small">Don't miss our special offer: {{special_offer}}</p>
+                                <p class="small mb-0">Stay connected!<br>{{your_name}}</p>
+                            </div>
+                            <div class="card-footer">
+                                <small class="text-muted"><i class="fas fa-tags me-1"></i>Marketing</small>
+                                <button class="btn btn-sm btn-danger float-end use-sample-template" 
+                                    data-template-id="marketing-newsletter">
+                                    <i class="fas fa-copy me-1"></i>Use Template
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sample Template 8: Support Response -->
+                    <div class="col-md-4 mb-3">
+                        <div class="card h-100 template-card sample-template" data-category="business" data-name="Support Response">
+                            <div class="card-header" style="background-color: #6c757d; color: white;">
+                                <h6 class="mb-0"><i class="fas fa-headset me-2"></i>Support Response</h6>
+                            </div>
+                            <div class="card-body">
+                                <p class="small text-muted mb-2">Subject: Re: {{ticket_subject}} - Ticket #{{ticket_id}}</p>
+                                <p class="small">Dear {{recipient_name}},</p>
+                                <p class="small">Thank you for contacting our support team regarding {{issue_summary}}.</p>
+                                <p class="small">We have reviewed your case and {{resolution_summary}}.</p>
+                                <p class="small">If you have any further questions, please don't hesitate to reach out.</p>
+                                <p class="small mb-0">Best regards,<br>{{agent_name}}<br>Support Team</p>
+                            </div>
+                            <div class="card-footer">
+                                <small class="text-muted"><i class="fas fa-tags me-1"></i>Business</small>
+                                <button class="btn btn-sm btn-secondary float-end use-sample-template" 
+                                    data-template-id="support-response">
+                                    <i class="fas fa-copy me-1"></i>Use Template
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sample Template 9: Invoice Reminder -->
+                    <div class="col-md-4 mb-3">
+                        <div class="card h-100 template-card sample-template" data-category="business" data-name="Invoice Reminder">
+                            <div class="card-header" style="background-color: #fd7e14; color: white;">
+                                <h6 class="mb-0"><i class="fas fa-file-invoice-dollar me-2"></i>Invoice Reminder</h6>
+                            </div>
+                            <div class="card-body">
+                                <p class="small text-muted mb-2">Subject: Invoice #{{invoice_number}} - Payment Reminder</p>
+                                <p class="small">Dear {{recipient_name}},</p>
+                                <p class="small">This is a friendly reminder that Invoice #{{invoice_number}} for {{amount}} is due on {{due_date}}.</p>
+                                <p class="small">If you have already made the payment, please disregard this message.</p>
+                                <p class="small">Thank you for your prompt attention to this matter.</p>
+                                <p class="small mb-0">Best regards,<br>{{your_name}}<br>{{company_name}}</p>
+                            </div>
+                            <div class="card-footer">
+                                <small class="text-muted"><i class="fas fa-tags me-1"></i>Business</small>
+                                <button class="btn btn-sm float-end use-sample-template" 
+                                    style="background-color: #fd7e14; color: white;"
+                                    data-template-id="invoice-reminder">
+                                    <i class="fas fa-copy me-1"></i>Use Template
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Designed Templates Section -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card bg-gradient-primary text-white">
+            <div class="card-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                <h5 class="mb-0"><i class="fas fa-palette me-2"></i>My Designed Templates</h5>
+            </div>
+            <div class="card-body">
+                <p class="small opacity-75 mb-3">Templates created using the visual designer. Click "Use" to compose an email with the template.</p>
+                <div class="row" id="designedTemplates">
+                    {% set designed_templates = templates[:3] if templates else [] %}
+                    {% if designed_templates %}
+                        {% for template in designed_templates %}
+                            <div class="col-md-4 mb-3">
+                                <div class="card h-100">
+                                    <div class="card-header d-flex justify-content-between align-items-center">
+                                        <h6 class="mb-0">{{ template.name }}</h6>
+                                        <span class="badge bg-success">Designed</span>
+                                    </div>
+                                    <div class="card-body">
+                                        <p class="small text-muted mb-2"><i class="fas fa-heading me-1"></i>{{ template.subject }}</p>
+                                        <div class="small text-truncate" style="max-height: 80px; overflow: hidden;">
+                                            {{ template.body[:200]|safe }}{% if template.body|length > 200 %}...{% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="card-footer d-flex justify-content-between align-items-center">
+                                        <small class="text-muted"><i class="fas fa-chart-line me-1"></i>{{ template.use_count }} uses</small>
+                                        <div class="btn-group btn-group-sm">
+                                            <button class="btn btn-success use-designed-template" data-template-id="{{ template.id }}" title="Use Template">
+                                                <i class="fas fa-paper-plane me-1"></i>Use
+                                            </button>
+                                            <a href="{{ url_for('features.template_designer', template_id=template.id) }}" class="btn btn-outline-primary" title="Edit">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <form action="{{ url_for('features.delete_template', template_id=template.id) }}" method="POST" style="display: inline;">
+                                                <button type="submit" class="btn btn-outline-danger" title="Delete" onclick="return confirm('Delete this template?')">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="col-12 text-center py-3">
+                            <p class="mb-2 opacity-75">No designed templates yet. Create one with the Template Designer!</p>
+                            <a href="{{ url_for('features.template_designer') }}" class="btn btn-light">
+                                <i class="fas fa-palette me-2"></i>Open Template Designer
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- User Templates Section -->
+<div class="row">
+    <div class="col-12">
+        <h5 class="mb-3"><i class="fas fa-folder text-primary me-2"></i>My Quick Templates</h5>
+    </div>
+</div>
+
+<div class="row" id="userTemplates">
+    {% if templates %}
+        {% for template in templates %}
+            <div class="col-md-4 mb-3 template-item" data-category="{{ template.category }}" data-name="{{ template.name|lower }}">
+                <div class="card h-100 template-card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h6 class="mb-0">{{ template.name }}</h6>
+                        <span class="badge 
+                            {% if template.category == 'business' %}bg-primary
+                            {% elif template.category == 'personal' %}bg-info
+                            {% elif template.category == 'followup' %}bg-warning text-dark
+                            {% elif template.category == 'professional' %}bg-success
+                            {% elif template.category == 'marketing' %}bg-danger
+                            {% else %}bg-secondary{% endif %}">
+                            {{ template.category|title }}
+                        </span>
+                    </div>
+                    <div class="card-body">
+                        <p class="small text-muted mb-2"><i class="fas fa-heading me-1"></i>{{ template.subject }}</p>
+                        <p class="small text-truncate" style="max-height: 60px; overflow: hidden;">
+                            {{ template.body[:150] }}{% if template.body|length > 150 %}...{% endif %}
+                        </p>
+                        {% if template.variables %}
+                            <div class="mt-2">
+                                <small class="text-muted"><i class="fas fa-code me-1"></i>Variables:</small>
+                                {% set var_list = template.variables.split(',') if template.variables else [] %}
+                                {% for var in var_list %}
+                                    <span class="badge bg-light text-dark me-1">{{ var.strip() }}</span>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="card-footer d-flex justify-content-between align-items-center">
+                        <small class="text-muted"><i class="fas fa-chart-line me-1"></i>Used {{ template.use_count }} times</small>
+                        <div class="btn-group btn-group-sm">
+                            <button class="btn btn-primary use-designed-template" data-template-id="{{ template.id }}" title="Use Template">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                            <a href="{{ url_for('features.template_designer', template_id=template.id) }}" class="btn btn-outline-primary" title="Edit in Designer">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <form action="{{ url_for('features.delete_template', template_id=template.id) }}" method="POST" style="display: inline;">
+                                <button type="submit" class="btn btn-outline-danger" title="Delete Template" onclick="return confirm('Delete this template?')">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <div class="col-12">
+            <div class="text-center py-4 bg-light rounded">
+                <i class="fas fa-file-alt fa-3x text-muted mb-3"></i>
+                <h5>No custom templates yet</h5>
+                <p class="text-muted">Create your own templates or use the sample templates above to get started.</p>
+                <a href="{{ url_for('features.create_template') }}" class="btn btn-primary">
+                    <i class="fas fa-plus me-2"></i>Create Your First Template
+                </a>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<!-- Use Sample Template Modal -->
+<div class="modal fade" id="useSampleTemplateModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-file-alt text-primary me-2"></i>Use Sample Template</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="sampleTemplateForm" action="{{ url_for('features.create_template') }}" method="POST">
+                <div class="modal-body">
+                    <input type="hidden" name="from_sample" value="1">
+                    <div class="mb-3">
+                        <label class="form-label">Template Name</label>
+                        <input type="text" class="form-control" name="name" id="sampleName" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Category</label>
+                        <select class="form-select" name="category" id="sampleCategory">
+                            <option value="business">Business</option>
+                            <option value="personal">Personal</option>
+                            <option value="followup">Follow-up</option>
+                            <option value="professional">Professional</option>
+                            <option value="marketing">Marketing</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Subject</label>
+                        <input type="text" class="form-control" name="subject" id="sampleSubject" required>
+                        <small class="text-muted">Use {{variable}} for dynamic content</small>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Body</label>
+                        <textarea class="form-control" name="body" id="sampleBody" rows="10" required></textarea>
+                        <small class="text-muted">Use {{variable}} for dynamic content that changes per email</small>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Variables (comma-separated)</label>
+                        <input type="text" class="form-control" name="variables" id="sampleVariables" placeholder="recipient_name, your_name, date">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-save me-1"></i>Save & Use Template</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Initialize after DOM is ready
+document.addEventListener('DOMContentLoaded', function() {
+    // Sample templates data
+    var sampleTemplates = {
+        'meeting-request': {
+            name: 'Meeting Request',
+            category: 'business',
+            subject: 'Meeting Request - {{topic}}',
+            body: 'Dear {{recipient_name}},\n\nI hope this email finds you well. I would like to request a meeting to discuss {{topic}} at your earliest convenience.\n\nProposed date/time: {{proposed_datetime}}\nDuration: {{duration}}\n\nPlease let me know if this works for you or suggest an alternative time.\n\nBest regards,\n{{your_name}}',
+            variables: 'recipient_name, topic, proposed_datetime, duration, your_name'
+        },
+        'job-application': {
+            name: 'Job Application',
+            category: 'professional',
+            subject: 'Application for {{position}} - {{your_name}}',
+            body: 'Dear Hiring Manager,\n\nI am writing to express my interest in the {{position}} position at {{company_name}}. With my background in {{your_field}} and {{years_experience}} years of experience, I am confident in my ability to contribute to your team.\n\nI have attached my resume for your review. I would welcome the opportunity to discuss how my skills align with your needs.\n\nThank you for your consideration.\n\nSincerely,\n{{your_name}}\n{{your_phone}}\n{{your_email}}',
+            variables: 'position, your_name, company_name, your_field, years_experience, your_phone, your_email'
+        },
+        'follow-up': {
+            name: 'Follow-up Email',
+            category: 'followup',
+            subject: 'Following up on {{subject}}',
+            body: 'Dear {{recipient_name}},\n\nI wanted to follow up on our previous conversation regarding {{subject}}. As discussed, I wanted to check if there have been any updates.\n\nPlease let me know if you need any additional information from my end.\n\nLooking forward to hearing from you.\n\nBest regards,\n{{your_name}}',
+            variables: 'recipient_name, subject, your_name'
+        },
+        'thank-you': {
+            name: 'Thank You Note',
+            category: 'personal',
+            subject: 'Thank You!',
+            body: 'Dear {{recipient_name}},\n\nI wanted to take a moment to express my sincere gratitude for {{what_for}}. Your {{gesture_type}} meant a lot to me.\n\nI truly appreciate your thoughtfulness and support.\n\nWith warm regards,\n{{your_name}}',
+            variables: 'recipient_name, what_for, gesture_type, your_name'
+        },
+        'project-update': {
+            name: 'Project Update',
+            category: 'business',
+            subject: 'Project Update - {{project_name}}',
+            body: 'Dear {{recipient_name}},\n\nHere is the latest update on {{project_name}}:\n\nStatus: {{status}}\nProgress: {{progress}}%\nNext Steps: {{next_steps}}\n\nPlease let me know if you have any questions or concerns.\n\nBest regards,\n{{your_name}}',
+            variables: 'recipient_name, project_name, status, progress, next_steps, your_name'
+        },
+        'introduction': {
+            name: 'Professional Introduction',
+            category: 'professional',
+            subject: 'Introduction - {{your_name}}',
+            body: 'Dear {{recipient_name}},\n\nI hope this email finds you well. My name is {{your_name}} and I am the {{your_title}} at {{your_company}}.\n\nI am reaching out because {{reason_for_contact}}. I would love the opportunity to connect and discuss how we might {{potential_collaboration}}.\n\nI look forward to hearing from you.\n\nBest regards,\n{{your_name}}\n{{your_company}}\n{{your_phone}}',
+            variables: 'recipient_name, your_name, your_title, your_company, reason_for_contact, potential_collaboration, your_phone'
+        },
+        'marketing-newsletter': {
+            name: 'Marketing Newsletter',
+            category: 'marketing',
+            subject: '{{newsletter_title}} - {{company_name}}',
+            body: 'Dear {{recipient_name}},\n\nWelcome to our monthly newsletter! Here\'s what\'s new at {{company_name}}:\n\n{{feature_title}}\n{{feature_description}}\n\nDon\'t miss our special offer: {{special_offer}}\n\nStay connected!\n{{your_name}}',
+            variables: 'recipient_name, newsletter_title, company_name, feature_title, feature_description, special_offer, your_name'
+        },
+        'support-response': {
+            name: 'Support Response',
+            category: 'business',
+            subject: 'Re: {{ticket_subject}} - Ticket #{{ticket_id}}',
+            body: 'Dear {{recipient_name}},\n\nThank you for contacting our support team regarding {{issue_summary}}.\n\nWe have reviewed your case and {{resolution_summary}}.\n\nIf you have any further questions, please don\'t hesitate to reach out.\n\nBest regards,\n{{agent_name}}\nSupport Team',
+            variables: 'recipient_name, ticket_subject, ticket_id, issue_summary, resolution_summary, agent_name'
+        },
+        'invoice-reminder': {
+            name: 'Invoice Reminder',
+            category: 'business',
+            subject: 'Invoice #{{invoice_number}} - Payment Reminder',
+            body: 'Dear {{recipient_name}},\n\nThis is a friendly reminder that Invoice #{{invoice_number}} for {{amount}} is due on {{due_date}}.\n\nIf you have already made the payment, please disregard this message.\n\nThank you for your prompt attention to this matter.\n\nBest regards,\n{{your_name}}\n{{company_name}}',
+            variables: 'recipient_name, invoice_number, amount, due_date, your_name, company_name'
+        }
+    };
+
+    // Search functionality
+    var searchInput = document.getElementById('searchTemplates');
+    if (searchInput) {
+        searchInput.addEventListener('input', function(e) {
+            var query = e.target.value.toLowerCase();
+            var items = document.querySelectorAll('.template-item, .sample-template');
+            items.forEach(function(item) {
+                var name = item.dataset.name || '';
+                item.style.display = name.toLowerCase().indexOf(query) !== -1 ? '' : 'none';
+            });
+        });
+    }
+
+    // Category filter
+    var categoryButtons = document.querySelectorAll('#categoryFilter button');
+    categoryButtons.forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            // Remove active from all
+            categoryButtons.forEach(function(b) {
+                b.classList.remove('active');
+            });
+            // Add active to clicked
+            this.classList.add('active');
+            
+            var category = this.dataset.category;
+            var items = document.querySelectorAll('.template-item, .sample-template');
+            items.forEach(function(item) {
+                if (category === 'all' || item.dataset.category === category) {
+                    item.style.display = '';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        });
+    });
+
+    // Use sample template buttons
+    var useButtons = document.querySelectorAll('.use-sample-template');
+    useButtons.forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            var templateId = this.dataset.templateId;
+            var template = sampleTemplates[templateId];
+            
+            if (template) {
+                document.getElementById('sampleName').value = template.name;
+                document.getElementById('sampleCategory').value = template.category;
+                document.getElementById('sampleSubject').value = template.subject;
+                document.getElementById('sampleBody').value = template.body;
+                document.getElementById('sampleVariables').value = template.variables;
+                
+                var modalEl = document.getElementById('useSampleTemplateModal');
+                var modal = new bootstrap.Modal(modalEl);
+                modal.show();
+            }
+        });
+    });
+
+    // Use designed template buttons - redirect to compose with template
+    var useDesignedButtons = document.querySelectorAll('.use-designed-template');
+    useDesignedButtons.forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            var templateId = this.dataset.templateId;
+            
+            // Fetch template data and redirect to compose
+            fetch('/features/templates/api/' + templateId)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.subject && data.body) {
+                        // Store in sessionStorage and redirect to compose
+                        sessionStorage.setItem('templateSubject', data.subject);
+                        sessionStorage.setItem('templateBody', data.body);
+                        window.location.href = '/compose?use_template=true';
+                    } else {
+                        alert('Could not load template data');
+                    }
+                })
+                .catch(err => {
+                    console.error('Error loading template:', err);
+                    alert('Failed to load template');
+                });
+        });
+    });
+});
+</script>
+{% endblock %}

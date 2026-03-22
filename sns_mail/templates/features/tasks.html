@@ -1,0 +1,170 @@
+{% extends "base.html" %}
+
+{% block title %}Tasks - SNS Mail{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h2 class="mb-4">
+            <i class="fas fa-tasks text-primary"></i>
+            Email to Task Converter
+            <span class="badge bg-info">New Feature!</span>
+        </h2>
+    </div>
+</div>
+
+<!-- Stats Cards -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body text-center">
+                <h3>{{ total_tasks }}</h3>
+                <small>Total Tasks</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-success text-white">
+            <div class="card-body text-center">
+                <h3>{{ completed_tasks }}</h3>
+                <small>Completed</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-warning text-white">
+            <div class="card-body text-center">
+                <h3>{{ pending_tasks }}</h3>
+                <small>Pending</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <a href="{{ url_for('features.create_task') }}" class="btn btn-success w-100 h-100 d-flex align-items-center justify-content-center">
+            <div class="text-center">
+                <i class="fas fa-plus fa-2x"></i>
+                <p class="mb-0">New Task</p>
+            </div>
+        </a>
+    </div>
+</div>
+
+<!-- Filters -->
+<div class="row mb-3">
+    <div class="col-12">
+        <div class="btn-group">
+            <a href="{{ url_for('features.tasks', status='all', priority=priority_filter) }}" 
+               class="btn btn-outline-primary {% if status_filter == 'all' %}active{% endif %}">All</a>
+            <a href="{{ url_for('features.tasks', status='pending', priority=priority_filter) }}" 
+               class="btn btn-outline-warning {% if status_filter == 'pending' %}active{% endif %}">Pending</a>
+            <a href="{{ url_for('features.tasks', status='in_progress', priority=priority_filter) }}" 
+               class="btn btn-outline-info {% if status_filter == 'in_progress' %}active{% endif %}">In Progress</a>
+            <a href="{{ url_for('features.tasks', status='completed', priority=priority_filter) }}" 
+               class="btn btn-outline-success {% if status_filter == 'completed' %}active{% endif %}">Completed</a>
+        </div>
+    </div>
+</div>
+
+<!-- Tasks List -->
+<div class="row">
+    <div class="col-12">
+        {% if tasks %}
+            {% for task in tasks %}
+                <div class="card mb-3 task-card {% if task.status == 'completed' %}opacity-50{% endif %}">
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-md-1 text-center">
+                                <input type="checkbox" class="form-check-input task-checkbox" 
+                                       data-task-id="{{ task.id }}"
+                                       {% if task.status == 'completed' %}checked{% endif %}>
+                            </div>
+                            <div class="col-md-7">
+                                <h5 class="mb-1 {% if task.status == 'completed' %}text-decoration-line-through{% endif %}">
+                                    {{ task.title }}
+                                </h5>
+                                <p class="text-muted mb-0 small">
+                                    {% if task.description %}
+                                        {{ task.description[:100] }}{% if task.description|length > 100 %}...{% endif %}
+                                    {% endif %}
+                                </p>
+                                {% if task.email_id %}
+                                    <small class="text-info">
+                                        <i class="fas fa-envelope"></i> From Email
+                                    </small>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-2 text-center">
+                                <span class="badge 
+                                    {% if task.priority == 'urgent' %}bg-danger
+                                    {% elif task.priority == 'high' %}bg-warning
+                                    {% elif task.priority == 'medium' %}bg-info
+                                    {% else %}bg-secondary{% endif %}">
+                                    {{ task.priority|title }}
+                                </span>
+                                <br>
+                                <span class="badge 
+                                    {% if task.status == 'completed' %}bg-success
+                                    {% elif task.status == 'in_progress' %}bg-primary
+                                    {% elif task.status == 'cancelled' %}bg-danger
+                                    {% else %}bg-warning{% endif %}">
+                                    {{ task.status|replace('_', ' ')|title }}
+                                </span>
+                            </div>
+                            <div class="col-md-2 text-end">
+                                {% if task.due_date %}
+                                    <small class="text-muted d-block">
+                                        <i class="fas fa-clock"></i> 
+                                        {{ task.due_date.strftime('%Y-%m-%d %H:%M') }}
+                                    </small>
+                                {% endif %}
+                                <a href="{{ url_for('features.view_task', task_id=task.id) }}" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <form action="{{ url_for('features.delete_task', task_id=task.id) }}" method="POST" style="display: inline;">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Delete this task?')">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-tasks fa-4x text-muted mb-3"></i>
+                <h4>No tasks yet</h4>
+                <p class="text-muted">Convert emails to tasks or create new ones!</p>
+                <a href="{{ url_for('features.create_task') }}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Create First Task
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.querySelectorAll('.task-checkbox').forEach(checkbox => {
+    checkbox.addEventListener('change', function() {
+        const taskId = this.dataset.taskId;
+        const status = this.checked ? 'completed' : 'pending';
+        
+        fetch(`/features/tasks/${taskId}/update-status`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: `status=${status}`
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

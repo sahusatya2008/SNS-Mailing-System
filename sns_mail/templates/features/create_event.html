@@ -1,0 +1,406 @@
+{% extends "base.html" %}
+
+{% block title %}{% if edit_mode %}Edit Event{% else %}Create Event{% endif %} - SNS Mail{% endblock %}
+
+{% block extra_css %}
+<style>
+.event-form-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
+    padding: 30px;
+}
+.form-section {
+    margin-bottom: 25px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border-color);
+}
+.form-section:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+}
+.form-section h5 {
+    color: var(--cyan);
+    font-size: 0.95rem;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.color-picker {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+.color-option {
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 3px solid transparent;
+    transition: all 0.3s;
+}
+.color-option:hover {
+    transform: scale(1.1);
+}
+.color-option.selected {
+    border-color: white;
+    box-shadow: 0 0 15px currentColor;
+}
+.attendee-tag {
+    display: inline-flex;
+    align-items: center;
+    background: rgba(0, 212, 255, 0.1);
+    border: 1px solid rgba(0, 212, 255, 0.3);
+    border-radius: 20px;
+    padding: 5px 12px;
+    margin: 3px;
+    font-size: 0.85rem;
+}
+.attendee-tag .remove-attendee {
+    margin-left: 8px;
+    cursor: pointer;
+    opacity: 0.7;
+}
+.attendee-tag .remove-attendee:hover {
+    opacity: 1;
+}
+.reminder-option {
+    background: rgba(10, 10, 20, 0.5);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 12px 15px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+.reminder-option:hover {
+    background: rgba(0, 212, 255, 0.1);
+    border-color: rgba(0, 212, 255, 0.3);
+}
+.reminder-option.active {
+    background: rgba(0, 212, 255, 0.15);
+    border-color: var(--cyan);
+}
+.meeting-platform-btn {
+    flex: 1;
+    padding: 15px;
+    background: rgba(10, 10, 20, 0.5);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.3s;
+}
+.meeting-platform-btn:hover {
+    background: rgba(0, 212, 255, 0.1);
+}
+.meeting-platform-btn.selected {
+    background: rgba(0, 212, 255, 0.15);
+    border-color: var(--cyan);
+}
+.meeting-platform-btn i {
+    font-size: 1.5rem;
+    margin-bottom: 5px;
+    display: block;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h2 class="mb-4">
+            <i class="fas fa-calendar-plus text-primary"></i>
+            {% if edit_mode %}Edit Event{% else %}Create New Event{% endif %}
+        </h2>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <form method="POST" action="{% if edit_mode %}{{ url_for('features.edit_event', event_id=event.id) }}{% else %}{{ url_for('features.create_event') }}{% endif %}">
+            <div class="event-form-card">
+                <!-- Basic Info -->
+                <div class="form-section">
+                    <h5><i class="fas fa-info-circle"></i> Event Details</h5>
+                    <div class="mb-3">
+                        <label class="form-label">Event Title *</label>
+                        <input type="text" name="title" class="form-control" required
+                               value="{% if event %}{{ event.title }}{% elif prefill.title %}{{ prefill.title }}{% endif %}"
+                               placeholder="Enter event title">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Description</label>
+                        <textarea name="description" class="form-control" rows="3"
+                                  placeholder="Add event description...">{% if event %}{{ event.description }}{% endif %}</textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Location</label>
+                        <input type="text" name="location" class="form-control"
+                               value="{% if event %}{{ event.location }}{% endif %}"
+                               placeholder="Enter location or 'Online'">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Event Type</label>
+                        <select name="event_type" class="form-select">
+                            <option value="event" {% if event and event.event_type == 'event' %}selected{% endif %}>Event</option>
+                            <option value="meeting" {% if event and event.event_type == 'meeting' %}selected{% endif %}>Meeting</option>
+                            <option value="reminder" {% if event and event.event_type == 'reminder' %}selected{% endif %}>Reminder</option>
+                            <option value="task" {% if event and event.event_type == 'task' %}selected{% endif %}>Task</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Date & Time -->
+                <div class="form-section">
+                    <h5><i class="fas fa-clock"></i> Date & Time</h5>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Start Time *</label>
+                            <input type="datetime-local" name="start_time" class="form-control" required
+                                   value="{% if event %}{{ event.start_time.strftime('%Y-%m-%dT%H:%M') }}{% elif prefill.start_time %}{{ prefill.start_time }}{% endif %}">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">End Time</label>
+                            <input type="datetime-local" name="end_time" class="form-control"
+                                   value="{% if event and event.end_time %}{{ event.end_time.strftime('%Y-%m-%dT%H:%M') }}{% elif prefill.end_time %}{{ prefill.end_time }}{% endif %}">
+                        </div>
+                    </div>
+                    <div class="form-check">
+                        <input type="checkbox" name="is_all_day" class="form-check-input" id="isAllDay"
+                               {% if event and event.is_all_day %}checked{% endif %}>
+                        <label class="form-check-label" for="isAllDay">All day event</label>
+                    </div>
+                </div>
+
+                <!-- Meeting Options -->
+                <div class="form-section">
+                    <h5><i class="fas fa-video"></i> Meeting Options</h5>
+                    <div class="form-check mb-3">
+                        <input type="checkbox" name="is_meeting" class="form-check-input" id="isMeeting"
+                               {% if event and event.is_meeting %}checked{% endif %}
+                               onchange="toggleMeetingOptions()">
+                        <label class="form-check-label" for="isMeeting">This is a meeting</label>
+                    </div>
+                    
+                    <div id="meetingOptions" style="{% if not event or not event.is_meeting %}display: none;{% endif %}">
+                        <div class="mb-3">
+                            <label class="form-label">Meeting Platform</label>
+                            <div class="d-flex gap-2">
+                                <div class="meeting-platform-btn {% if event and event.meeting_platform == 'zoom' %}selected{% endif %}"
+                                     onclick="selectPlatform('zoom')">
+                                    <i class="fas fa-video text-primary"></i>
+                                    <small>Zoom</small>
+                                </div>
+                                <div class="meeting-platform-btn {% if event and event.meeting_platform == 'teams' %}selected{% endif %}"
+                                     onclick="selectPlatform('teams')">
+                                    <i class="fas fa-users text-info"></i>
+                                    <small>Teams</small>
+                                </div>
+                                <div class="meeting-platform-btn {% if event and event.meeting_platform == 'meet' %}selected{% endif %}"
+                                     onclick="selectPlatform('meet')">
+                                    <i class="fab fa-google text-success"></i>
+                                    <small>Meet</small>
+                                </div>
+                                <div class="meeting-platform-btn {% if event and event.meeting_platform == 'other' %}selected{% endif %}"
+                                     onclick="selectPlatform('other')">
+                                    <i class="fas fa-link text-warning"></i>
+                                    <small>Other</small>
+                                </div>
+                            </div>
+                            <input type="hidden" name="meeting_platform" id="meetingPlatform"
+                                   value="{% if event %}{{ event.meeting_platform }}{% endif %}">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Meeting Link</label>
+                            <input type="url" name="meeting_link" class="form-control"
+                                   value="{% if event %}{{ event.meeting_link }}{% endif %}"
+                                   placeholder="https://zoom.us/j/...">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Reminders -->
+                <div class="form-section">
+                    <h5><i class="fas fa-bell"></i> Reminders</h5>
+                    <div class="row">
+                        <div class="col-md-4 mb-2">
+                            <div class="reminder-option {% if event and event.reminder_one_day %}active{% elif not event %}active{% endif %}"
+                                 onclick="toggleReminder(this, 'reminder_one_day')">
+                                <input type="checkbox" name="reminder_one_day" class="d-none"
+                                       {% if event and event.reminder_one_day %}checked{% elif not event %}checked{% endif %}>
+                                <i class="fas fa-calendar-day text-warning me-2"></i>
+                                <span>1 Day Before</span>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-2">
+                            <div class="reminder-option {% if event and event.reminder_one_hour %}active{% elif not event %}active{% endif %}"
+                                 onclick="toggleReminder(this, 'reminder_one_hour')">
+                                <input type="checkbox" name="reminder_one_hour" class="d-none"
+                                       {% if event and event.reminder_one_hour %}checked{% elif not event %}checked{% endif %}>
+                                <i class="fas fa-clock text-danger me-2"></i>
+                                <span>1 Hour Before</span>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-2">
+                            <div class="reminder-option">
+                                <label class="mb-0 d-flex align-items-center">
+                                    <i class="fas fa-stopwatch text-info me-2"></i>
+                                    <span>Custom:</span>
+                                    <input type="number" name="reminder_custom" class="form-control form-control-sm ms-2"
+                                           style="width: 80px;" min="5" step="5"
+                                           value="{% if event and event.reminder_custom %}{{ event.reminder_custom }}{% endif %}"
+                                           placeholder="min">
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Color -->
+                <div class="form-section">
+                    <h5><i class="fas fa-palette"></i> Event Color</h5>
+                    <div class="color-picker">
+                        <div class="color-option {% if not event or event.color == '#00d4ff' %}selected{% endif %}"
+                             style="background: #00d4ff;" onclick="selectColor(this, '#00d4ff')"></div>
+                        <div class="color-option {% if event and event.color == '#8b5cf6' %}selected{% endif %}"
+                             style="background: #8b5cf6;" onclick="selectColor(this, '#8b5cf6')"></div>
+                        <div class="color-option {% if event and event.color == '#10b981' %}selected{% endif %}"
+                             style="background: #10b981;" onclick="selectColor(this, '#10b981')"></div>
+                        <div class="color-option {% if event and event.color == '#f59e0b' %}selected{% endif %}"
+                             style="background: #f59e0b;" onclick="selectColor(this, '#f59e0b')"></div>
+                        <div class="color-option {% if event and event.color == '#ef4444' %}selected{% endif %}"
+                             style="background: #ef4444;" onclick="selectColor(this, '#ef4444')"></div>
+                        <div class="color-option {% if event and event.color == '#ec4899' %}selected{% endif %}"
+                             style="background: #ec4899;" onclick="selectColor(this, '#ec4899')"></div>
+                        <div class="color-option {% if event and event.color == '#6366f1' %}selected{% endif %}"
+                             style="background: #6366f1;" onclick="selectColor(this, '#6366f1')"></div>
+                        <div class="color-option {% if event and event.color == '#14b8a6' %}selected{% endif %}"
+                             style="background: #14b8a6;" onclick="selectColor(this, '#14b8a6')"></div>
+                    </div>
+                    <input type="hidden" name="color" id="eventColor"
+                           value="{% if event %}{{ event.color }}{% else %}#00d4ff{% endif %}">
+                </div>
+
+                <!-- Linking -->
+                {% if tasks %}
+                <div class="form-section">
+                    <h5><i class="fas fa-link"></i> Link to Task</h5>
+                    <select name="task_id" class="form-select">
+                        <option value="">-- No linked task --</option>
+                        {% for task in tasks %}
+                        <option value="{{ task.id }}" {% if event and event.task_id == task.id %}selected{% elif prefill.task_id == task.id|string %}selected{% endif %}>
+                            {{ task.title }} {% if task.due_date %}(Due: {{ task.due_date.strftime('%m/%d') }}){% endif %}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                {% endif %}
+
+                <!-- Actions -->
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary flex-grow-1">
+                        <i class="fas fa-save me-1"></i>
+                        {% if edit_mode %}Update Event{% else %}Create Event{% endif %}
+                    </button>
+                    <a href="{{ url_for('features.calendar') }}" class="btn btn-secondary">
+                        Cancel
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-lightbulb text-warning me-2"></i>Tips</h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled mb-0">
+                    <li class="mb-2">
+                        <i class="fas fa-check text-success me-2"></i>
+                        Set reminders to never miss an event
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-check text-success me-2"></i>
+                        Add meeting links for easy access
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-check text-success me-2"></i>
+                        Link events to tasks for better tracking
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-check text-success me-2"></i>
+                        Use colors to categorize events
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card mt-3">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-question-circle text-info me-2"></i>Quick Help</h5>
+            </div>
+            <div class="card-body">
+                <p class="small text-muted mb-2">
+                    <strong>Event Types:</strong>
+                </p>
+                <ul class="small text-muted">
+                    <li><strong>Event:</strong> General events and appointments</li>
+                    <li><strong>Meeting:</strong> Online or in-person meetings</li>
+                    <li><strong>Reminder:</strong> Personal reminders</li>
+                    <li><strong>Task:</strong> Task-related events</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Toggle meeting options
+function toggleMeetingOptions() {
+    const checkbox = document.getElementById('isMeeting');
+    const options = document.getElementById('meetingOptions');
+    options.style.display = checkbox.checked ? 'block' : 'none';
+}
+
+// Select meeting platform
+function selectPlatform(platform) {
+    document.querySelectorAll('.meeting-platform-btn').forEach(btn => {
+        btn.classList.remove('selected');
+    });
+    event.currentTarget.classList.add('selected');
+    document.getElementById('meetingPlatform').value = platform;
+}
+
+// Toggle reminder
+function toggleReminder(element, name) {
+    const checkbox = element.querySelector('input[type="checkbox"]');
+    checkbox.checked = !checkbox.checked;
+    element.classList.toggle('active', checkbox.checked);
+}
+
+// Select color
+function selectColor(element, color) {
+    document.querySelectorAll('.color-option').forEach(opt => {
+        opt.classList.remove('selected');
+    });
+    element.classList.add('selected');
+    document.getElementById('eventColor').value = color;
+}
+
+// Initialize
+document.addEventListener('DOMContentLoaded', function() {
+    // Check if meeting is pre-selected
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('is_meeting') === '1') {
+        document.getElementById('isMeeting').checked = true;
+        toggleMeetingOptions();
+    }
+});
+</script>
+{% endblock %}

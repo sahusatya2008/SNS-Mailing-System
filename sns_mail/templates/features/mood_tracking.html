@@ -1,0 +1,721 @@
+{% extends "base.html" %}
+
+{% block title %}AI Mood Tracking - SNS Mail{% endblock %}
+
+{% block extra_css %}
+<style>
+.mood-gradient-positive {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+}
+.mood-gradient-negative {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+}
+.mood-gradient-neutral {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+}
+.mood-card {
+    border-radius: 15px;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+.mood-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+.emotion-bar {
+    height: 8px;
+    border-radius: 4px;
+    transition: width 0.5s ease;
+}
+.insight-card {
+    border-left: 4px solid;
+    transition: all 0.2s;
+}
+.insight-card:hover {
+    transform: translateX(5px);
+}
+.insight-critical { border-left-color: #ef4444; background: rgba(239, 68, 68, 0.1); }
+.insight-warning { border-left-color: #f59e0b; background: rgba(245, 158, 11, 0.1); }
+.insight-info { border-left-color: #00d4ff; background: rgba(0, 212, 255, 0.1); }
+.insight-success { border-left-color: #10b981; background: rgba(16, 185, 129, 0.1); }
+.analysis-row {
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.analysis-row:hover {
+    background: rgba(0, 212, 255, 0.05);
+}
+.sentiment-badge {
+    font-size: 0.75rem;
+    padding: 4px 10px;
+    border-radius: 20px;
+}
+.chart-container {
+    position: relative;
+    height: 200px;
+}
+.emotion-icon { width: 24px; text-align: center; }
+/* Colorful text for dark theme */
+.card-header h5 {
+    color: #00d4ff !important;
+    font-weight: 600;
+}
+.card-header h5 i {
+    color: #00d4ff !important;
+}
+.card-body {
+    color: #f1f5f9 !important;
+}
+.text-capitalize {
+    color: #00d4ff !important;
+    font-weight: 500;
+}
+.table td {
+    color: #f1f5f9 !important;
+}
+.table th {
+    color: #00d4ff !important;
+    font-weight: 600;
+}
+.small, small {
+    color: #94a3b8 !important;
+}
+.progress-bar {
+    color: #fff !important;
+}
+.d-flex span:not(.badge) {
+    color: #f1f5f9 !important;
+}
+.list-group-item {
+    color: #f1f5f9 !important;
+}
+.border.rounded.p-2 span {
+    color: #00d4ff !important;
+}
+/* Colorful icons */
+.card-header i {
+    color: inherit !important;
+}
+h5 i.fas {
+    color: #00d4ff !important;
+}
+h6 i.fas {
+    color: #10b981 !important;
+}
+/* Urgency level colors */
+.d-flex .fas.fa-circle.text-danger {
+    color: #ef4444 !important;
+}
+.d-flex .fas.fa-circle.text-warning {
+    color: #f59e0b !important;
+}
+.d-flex .fas.fa-circle.text-info {
+    color: #8b5cf6 !important;
+}
+.d-flex .fas.fa-circle.text-secondary {
+    color: #94a3b8 !important;
+}
+/* Pattern names */
+.text-capitalize.small {
+    color: #10b981 !important;
+    font-weight: 500;
+}
+/* Quick analysis result */
+#quickAnalysisResult span:not(.badge) {
+    color: #f1f5f9 !important;
+}
+/* Emotion names */
+.mb-3 .text-capitalize {
+    color: #00d4ff !important;
+}
+/* Score display */
+.text-muted {
+    color: #94a3b8 !important;
+}
+/* Modal text */
+.modal-body td {
+    color: #f1f5f9 !important;
+}
+.modal-body h6 {
+    color: #00d4ff !important;
+}
+/* Recent Analyses Table */
+.table thead th {
+    background: rgba(0, 212, 255, 0.15) !important;
+    color: #00d4ff !important;
+    font-weight: 600;
+    border-bottom: 2px solid rgba(0, 212, 255, 0.3) !important;
+}
+.table tbody td {
+    color: #f1f5f9 !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+.table tbody tr:hover td {
+    color: #00d4ff !important;
+    background: rgba(0, 212, 255, 0.08) !important;
+}
+.table-light {
+    background: transparent !important;
+}
+.analysis-row td {
+    padding: 14px 16px !important;
+    vertical-align: middle !important;
+}
+.analysis-row td i {
+    font-size: 1rem;
+}
+.analysis-row td small {
+    color: #94a3b8 !important;
+    font-size: 0.8rem;
+}
+/* Badge styling in table */
+.table .badge.bg-light {
+    background: rgba(0, 212, 255, 0.15) !important;
+    color: #00d4ff !important;
+    border: 1px solid rgba(0, 212, 255, 0.3);
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h2 class="mb-2">
+            <i class="fas fa-brain text-primary"></i>
+            AI Mood Tracking
+        </h2>
+        <p class="text-muted mb-4">Real-time sentiment analysis of your communications with AI-powered insights</p>
+    </div>
+</div>
+
+<!-- Overview Stats -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card mood-card text-white {% if report.overall_sentiment > 0.1 %}mood-gradient-positive{% elif report.overall_sentiment < -0.1 %}mood-gradient-negative{% else %}mood-gradient-neutral{% endif %}">
+            <div class="card-body text-center">
+                <i class="fas fa-heart fa-2x mb-2 opacity-75"></i>
+                <h2 class="mb-0">{{ report.overall_sentiment|round(2) }}</h2>
+                <small>Overall Sentiment</small>
+                <div class="mt-2">
+                    <span class="badge bg-light text-dark">{{ report.sentiment_label|title }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card mood-card bg-success text-white">
+            <div class="card-body text-center">
+                <i class="fas fa-smile fa-2x mb-2 opacity-75"></i>
+                <h2 class="mb-0">{{ report.sentiment_distribution.positive }}</h2>
+                <small>Positive Communications</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card mood-card bg-danger text-white">
+            <div class="card-body text-center">
+                <i class="fas fa-frown fa-2x mb-2 opacity-75"></i>
+                <h2 class="mb-0">{{ report.sentiment_distribution.negative }}</h2>
+                <small>Negative Communications</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card mood-card bg-info text-white">
+            <div class="card-body text-center">
+                <i class="fas fa-chart-line fa-2x mb-2 opacity-75"></i>
+                <h2 class="mb-0">{{ report.total_analyzed }}</h2>
+                <small>Total Analyzed</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- AI Insights Section -->
+{% if unread_insights %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-lightbulb me-2"></i>AI Insights & Recommendations</h5>
+            </div>
+            <div class="card-body">
+                {% for insight in unread_insights[:5] %}
+                <div class="insight-card insight-{{ insight.importance }} p-3 mb-2 rounded" id="insight-{{ insight.id }}">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h6 class="mb-1">
+                                {% if insight.importance == 'critical' %}
+                                    <i class="fas fa-exclamation-circle text-danger me-2"></i>
+                                {% elif insight.importance == 'warning' %}
+                                    <i class="fas fa-exclamation-triangle text-warning me-2"></i>
+                                {% elif insight.importance == 'success' %}
+                                    <i class="fas fa-check-circle text-success me-2"></i>
+                                {% else %}
+                                    <i class="fas fa-info-circle text-info me-2"></i>
+                                {% endif %}
+                                {{ insight.title }}
+                            </h6>
+                            <p class="mb-1 small text-muted">{{ insight.description }}</p>
+                        </div>
+                        <div class="btn-group btn-group-sm">
+                            <button class="btn btn-outline-primary" onclick="markInsightRead({{ insight.id }})">
+                                <i class="fas fa-check"></i>
+                            </button>
+                            <button class="btn btn-outline-secondary" onclick="dismissInsight({{ insight.id }})">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <small class="text-muted">{{ insight.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<div class="row">
+    <!-- Left Column - Charts & Analysis -->
+    <div class="col-lg-8">
+        <!-- Sentiment Timeline Chart -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-chart-area text-primary me-2"></i>Sentiment Timeline (30 Days)</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="sentimentChart" height="150"></canvas>
+            </div>
+        </div>
+
+        <!-- Emotion Distribution -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-theater-masks text-info me-2"></i>Emotion Distribution</h5>
+            </div>
+            <div class="card-body">
+                {% if emotion_chart_data %}
+                    {% for emotion, score in emotion_chart_data.items() %}
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span class="text-capitalize">
+                                {% if emotion == 'joy' %}<i class="fas fa-smile text-warning me-1"></i>
+                                {% elif emotion == 'anger' %}<i class="fas fa-angry text-danger me-1"></i>
+                                {% elif emotion == 'fear' %}<i class="fas fa-ghost text-secondary me-1"></i>
+                                {% elif emotion == 'sadness' %}<i class="fas fa-sad-tear text-primary me-1"></i>
+                                {% elif emotion == 'trust' %}<i class="fas fa-handshake text-success me-1"></i>
+                                {% elif emotion == 'anticipation' %}<i class="fas fa-eye text-info me-1"></i>
+                                {% elif emotion == 'surprise' %}<i class="fas fa-surprise text-warning me-1"></i>
+                                {% elif emotion == 'disgust' %}<i class="fas fa-dizzy text-danger me-1"></i>
+                                {% elif emotion == 'confidence' %}<i class="fas fa-crown text-success me-1"></i>
+                                {% elif emotion == 'gratitude' %}<i class="fas fa-pray text-info me-1"></i>
+                                {% elif emotion == 'urgency' %}<i class="fas fa-bolt text-warning me-1"></i>
+                                {% else %}<i class="fas fa-circle text-muted me-1"></i>
+                                {% endif %}
+                                {{ emotion }}
+                            </span>
+                            <span class="text-muted">{{ score|round(1) }}</span>
+                        </div>
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar 
+                                {% if emotion in ['joy', 'trust', 'confidence', 'gratitude'] %}bg-success
+                                {% elif emotion in ['anger', 'fear', 'sadness', 'disgust'] %}bg-danger
+                                {% else %}bg-info{% endif %}" 
+                                style="width: {{ (score / (emotion_chart_data.values()|list|first if emotion_chart_data else 1) * 100)|round }}%;">
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center py-4 text-muted">
+                        <i class="fas fa-theater-masks fa-3x mb-3"></i>
+                        <p>No emotion data yet. Start sending and receiving emails!</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Recent Sentiment Analyses -->
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-history text-secondary me-2"></i>Recent Analyses</h5>
+                <span class="badge bg-primary">{{ recent_analyses|length }} items</span>
+            </div>
+            <div class="card-body p-0">
+                {% if recent_analyses %}
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Type</th>
+                                <th>Sentiment</th>
+                                <th>Emotions</th>
+                                <th>Urgency</th>
+                                <th>Date</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for analysis in recent_analyses[:15] %}
+                            <tr class="analysis-row" data-analysis-id="{{ analysis.id }}">
+                                <td>
+                                    {% if analysis.email_id %}
+                                        <i class="fas fa-envelope text-primary me-1"></i> Email
+                                    {% elif analysis.note_id %}
+                                        <i class="fas fa-sticky-note text-warning me-1"></i> Note
+                                    {% elif analysis.task_id %}
+                                        <i class="fas fa-tasks text-info me-1"></i> Task
+                                    {% else %}
+                                        <i class="fas fa-file text-secondary me-1"></i> Other
+                                    {% endif %}
+                                    <small class="text-muted">
+                                        {% if analysis.is_outgoing %}Out{% else %}In{% endif %}
+                                    </small>
+                                </td>
+                                <td>
+                                    <span class="sentiment-badge 
+                                        {% if analysis.sentiment_label == 'positive' %}bg-success text-white
+                                        {% elif analysis.sentiment_label == 'negative' %}bg-danger text-white
+                                        {% else %}bg-secondary text-white{% endif %}">
+                                        {{ analysis.sentiment_score|round(2) }}
+                                    </span>
+                                </td>
+                                <td>
+                                    {% if analysis.dominant_emotions %}
+                                        {% for emotion in (analysis.dominant_emotions|from_json if analysis.dominant_emotions is string else analysis.dominant_emotions)[:3] %}
+                                            <span class="badge bg-light text-dark me-1">{{ emotion }}</span>
+                                        {% endfor %}
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="badge 
+                                        {% if analysis.urgency_level == 'critical' %}bg-danger
+                                        {% elif analysis.urgency_level == 'high' %}bg-warning text-dark
+                                        {% elif analysis.urgency_level == 'medium' %}bg-info
+                                        {% else %}bg-secondary{% endif %}">
+                                        {{ analysis.urgency_level }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <small>{{ analysis.analyzed_at.strftime('%m/%d %H:%M') }}</small>
+                                </td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-primary" onclick="viewAnalysis({{ analysis.id }})">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-4 text-muted">
+                    <i class="fas fa-inbox fa-3x mb-3"></i>
+                    <p>No analyses yet. Your communications will be analyzed automatically.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column - Details & Patterns -->
+    <div class="col-lg-4">
+        <!-- Urgency Distribution -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-bolt text-warning me-2"></i>Urgency Levels</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex justify-content-between mb-2">
+                    <span><i class="fas fa-circle text-danger me-2"></i>Critical</span>
+                    <span class="badge bg-danger">{{ report.urgency_distribution.critical }}</span>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span><i class="fas fa-circle text-warning me-2"></i>High</span>
+                    <span class="badge bg-warning text-dark">{{ report.urgency_distribution.high }}</span>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span><i class="fas fa-circle text-info me-2"></i>Medium</span>
+                    <span class="badge bg-info">{{ report.urgency_distribution.medium }}</span>
+                </div>
+                <div class="d-flex justify-content-between">
+                    <span><i class="fas fa-circle text-secondary me-2"></i>Normal</span>
+                    <span class="badge bg-secondary">{{ report.urgency_distribution.normal }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Communication Patterns -->
+        {% if patterns %}
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-project-diagram text-info me-2"></i>Detected Patterns</h5>
+            </div>
+            <div class="card-body">
+                {% for pattern in patterns[:5] %}
+                <div class="mb-3 p-2 border rounded">
+                    <div class="d-flex justify-content-between">
+                        <span class="text-capitalize small">{{ pattern.pattern_name }}</span>
+                        <span class="badge bg-primary">{{ (pattern.strength * 100)|round }}%</span>
+                    </div>
+                    <small class="text-muted">{{ pattern.pattern_type|replace('_', ' ') }}</small>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Mood History -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-calendar-alt text-success me-2"></i>Daily Mood Log</h5>
+            </div>
+            <div class="card-body" style="max-height: 300px; overflow-y: auto;">
+                {% if mood_data %}
+                    {% for log in mood_data[:14] %}
+                    <div class="d-flex align-items-center mb-2 pb-2 border-bottom">
+                        <div class="me-3">
+                            <small class="text-muted">{{ log.date.strftime('%m/%d') }}</small>
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="d-flex justify-content-between">
+                                <small>In: <span class="{% if log.avg_incoming_mood and log.avg_incoming_mood > 0.1 %}text-success{% elif log.avg_incoming_mood and log.avg_incoming_mood < -0.1 %}text-danger{% else %}text-secondary{% endif %}">{{ log.avg_incoming_mood|round(2) if log.avg_incoming_mood else 'N/A' }}</span></small>
+                                <small>Out: <span class="{% if log.avg_outgoing_mood and log.avg_outgoing_mood > 0.1 %}text-success{% elif log.avg_outgoing_mood and log.avg_outgoing_mood < -0.1 %}text-danger{% else %}text-secondary{% endif %}">{{ log.avg_outgoing_mood|round(2) if log.avg_outgoing_mood else 'N/A' }}</span></small>
+                            </div>
+                        </div>
+                        <div class="ms-2">
+                            {% if log.mood_trend == 'improving' %}
+                                <i class="fas fa-arrow-up text-success"></i>
+                            {% elif log.mood_trend == 'declining' %}
+                                <i class="fas fa-arrow-down text-danger"></i>
+                            {% else %}
+                                <i class="fas fa-minus text-secondary"></i>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center py-3 text-muted">
+                        <p class="mb-0">No mood data yet</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Quick Analysis Tool -->
+        <div class="card">
+            <div class="card-header bg-gradient-primary text-white" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                <h5 class="mb-0"><i class="fas fa-magic me-2"></i>Quick Analysis</h5>
+            </div>
+            <div class="card-body">
+                <textarea class="form-control mb-2" id="quickAnalysisText" rows="3" placeholder="Enter text to analyze sentiment..."></textarea>
+                <button class="btn btn-primary w-100" onclick="analyzeText()">
+                    <i class="fas fa-search me-1"></i>Analyze
+                </button>
+                <div id="quickAnalysisResult" class="mt-3"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Analysis Detail Modal -->
+<div class="modal fade" id="analysisModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-microscope text-primary me-2"></i>Analysis Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="analysisModalBody">
+                <div class="text-center py-4">
+                    <div class="spinner-border text-primary" role="status"></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Sentiment Timeline Chart
+var sentimentTimeline = {{ sentiment_timeline|safe }};
+if (sentimentTimeline && sentimentTimeline.length > 0) {
+    var ctx = document.getElementById('sentimentChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: sentimentTimeline.map(d => d.date),
+            datasets: [
+                {
+                    label: 'Incoming Mood',
+                    data: sentimentTimeline.map(d => d.incoming),
+                    borderColor: '#4285f4',
+                    backgroundColor: 'rgba(66, 133, 244, 0.1)',
+                    fill: true,
+                    tension: 0.4
+                },
+                {
+                    label: 'Outgoing Mood',
+                    data: sentimentTimeline.map(d => d.outgoing),
+                    borderColor: '#34a853',
+                    backgroundColor: 'rgba(52, 168, 83, 0.1)',
+                    fill: true,
+                    tension: 0.4
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    min: -1,
+                    max: 1,
+                    grid: { color: 'rgba(0,0,0,0.05)' }
+                },
+                x: {
+                    grid: { display: false }
+                }
+            },
+            plugins: {
+                legend: { position: 'top' }
+            }
+        }
+    });
+}
+
+// View analysis details
+function viewAnalysis(analysisId) {
+    var modal = new bootstrap.Modal(document.getElementById('analysisModal'));
+    document.getElementById('analysisModalBody').innerHTML = '<div class="text-center py-4"><div class="spinner-border text-primary"></div></div>';
+    modal.show();
+    
+    fetch('/features/mood/api/analysis/' + analysisId)
+        .then(response => response.json())
+        .then(data => {
+            var html = `
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6 class="text-primary"><i class="fas fa-chart-pie me-1"></i>Sentiment Scores</h6>
+                        <table class="table table-sm">
+                            <tr><td>Overall Score</td><td><strong>${data.sentiment_score}</strong></td></tr>
+                            <tr><td>Label</td><td><span class="badge ${data.sentiment_label === 'positive' ? 'bg-success' : data.sentiment_label === 'negative' ? 'bg-danger' : 'bg-secondary'}">${data.sentiment_label}</span></td></tr>
+                            <tr><td>Confidence</td><td>${(data.confidence * 100).toFixed(1)}%</td></tr>
+                            <tr><td>Positive</td><td class="text-success">${data.positive_score.toFixed(3)}</td></tr>
+                            <tr><td>Negative</td><td class="text-danger">${data.negative_score.toFixed(3)}</td></tr>
+                            <tr><td>Neutral</td><td class="text-secondary">${data.neutral_score.toFixed(3)}</td></tr>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="text-info"><i class="fas fa-theater-masks me-1"></i>Top Emotions</h6>
+                        <div class="mb-3">
+                            ${data.dominant_emotions.map(e => `<span class="badge bg-info me-1">${e}</span>`).join('')}
+                        </div>
+                        <h6 class="text-warning"><i class="fas fa-bolt me-1"></i>Characteristics</h6>
+                        <table class="table table-sm">
+                            <tr><td>Urgency</td><td><span class="badge ${data.urgency_level === 'critical' ? 'bg-danger' : data.urgency_level === 'high' ? 'bg-warning text-dark' : 'bg-info'}">${data.urgency_level}</span></td></tr>
+                            <tr><td>Formality</td><td>${data.formality_level}</td></tr>
+                        </table>
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-12">
+                        <h6 class="text-success"><i class="fas fa-lightbulb me-1"></i>AI Insights</h6>
+                        <ul class="list-group">
+                            ${data.insights.map(i => `<li class="list-group-item list-group-item-action">${i}</li>`).join('')}
+                        </ul>
+                    </div>
+                </div>
+                ${data.email ? `
+                <div class="row mt-3">
+                    <div class="col-12">
+                        <h6 class="text-primary"><i class="fas fa-envelope me-1"></i>Related Email</h6>
+                        <p class="mb-0"><strong>Subject:</strong> ${data.email.subject}</p>
+                        <small class="text-muted">From: ${data.email.sender} | ${data.email.sent_at}</small>
+                    </div>
+                </div>
+                ` : ''}
+            `;
+            document.getElementById('analysisModalBody').innerHTML = html;
+        })
+        .catch(err => {
+            document.getElementById('analysisModalBody').innerHTML = '<div class="alert alert-danger">Failed to load analysis details</div>';
+        });
+}
+
+// Quick text analysis
+function analyzeText() {
+    var text = document.getElementById('quickAnalysisText').value;
+    if (!text.trim()) {
+        alert('Please enter some text to analyze');
+        return;
+    }
+    
+    var resultDiv = document.getElementById('quickAnalysisResult');
+    resultDiv.innerHTML = '<div class="text-center"><div class="spinner-border spinner-border-sm text-primary"></div> Analyzing...</div>';
+    
+    var formData = new FormData();
+    formData.append('text', text);
+    
+    fetch('/features/mood/api/analyze', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            var a = data.analysis;
+            resultDiv.innerHTML = `
+                <div class="border rounded p-2">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="badge ${a.sentiment_label === 'positive' ? 'bg-success' : a.sentiment_label === 'negative' ? 'bg-danger' : 'bg-secondary'}">${a.sentiment_label}</span>
+                        <span>Score: ${a.sentiment_score}</span>
+                    </div>
+                    <div class="mb-2">
+                        <small class="text-muted">Emotions:</small><br>
+                        ${a.dominant_emotions.slice(0,3).map(e => `<span class="badge bg-info me-1">${e}</span>`).join('')}
+                    </div>
+                    <div class="small text-muted">
+                        <i class="fas fa-bolt"></i> Urgency: ${a.urgency_level} | 
+                        <i class="fas fa-user-tie"></i> Formality: ${a.formality_level}
+                    </div>
+                </div>
+            `;
+        } else {
+            resultDiv.innerHTML = '<div class="alert alert-danger">Analysis failed</div>';
+        }
+    })
+    .catch(err => {
+        resultDiv.innerHTML = '<div class="alert alert-danger">Error analyzing text</div>';
+    });
+}
+
+// Mark insight as read
+function markInsightRead(insightId) {
+    fetch('/features/mood/insights/' + insightId + '/read', { method: 'POST' })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                document.getElementById('insight-' + insightId).style.opacity = '0.5';
+            }
+        });
+}
+
+// Dismiss insight
+function dismissInsight(insightId) {
+    fetch('/features/mood/insights/' + insightId + '/dismiss', { method: 'POST' })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                document.getElementById('insight-' + insightId).remove();
+            }
+        });
+}
+</script>
+{% endblock %}

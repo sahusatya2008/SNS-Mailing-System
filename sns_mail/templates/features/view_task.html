@@ -1,0 +1,159 @@
+{% extends "base.html" %}
+
+{% block title %}{{ task.title }} - SNS Mail{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h2 class="mb-4">
+            <i class="fas fa-tasks text-primary"></i>
+            {{ task.title }}
+        </h2>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card mb-3">
+            <div class="card-header">
+                <h5 class="mb-0">Task Details</h5>
+            </div>
+            <div class="card-body">
+                <p><strong>Description:</strong></p>
+                <p>{{ task.description or 'No description' }}</p>
+                
+                <hr>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Priority:</strong> 
+                            <span class="badge 
+                                {% if task.priority == 'urgent' %}bg-danger
+                                {% elif task.priority == 'high' %}bg-warning
+                                {% elif task.priority == 'medium' %}bg-info
+                                {% else %}bg-secondary{% endif %}">
+                                {{ task.priority|title }}
+                            </span>
+                        </p>
+                        <p><strong>Status:</strong> 
+                            <span class="badge 
+                                {% if task.status == 'completed' %}bg-success
+                                {% elif task.status == 'in_progress' %}bg-primary
+                                {% else %}bg-warning{% endif %}">
+                                {{ task.status|replace('_', ' ')|title }}
+                            </span>
+                        </p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Due Date:</strong> 
+                            {{ task.due_date.strftime('%Y-%m-%d %H:%M') if task.due_date else 'Not set' }}
+                        </p>
+                        <p><strong>Created:</strong> 
+                            {{ task.created_at.strftime('%Y-%m-%d %H:%M') if task.created_at else 'N/A' }}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Subtasks -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Subtasks</h5>
+            </div>
+            <div class="card-body">
+                <form id="addSubtaskForm" class="mb-3">
+                    <div class="input-group">
+                        <input type="text" id="subtaskTitle" class="form-control" placeholder="Add subtask...">
+                        <button type="submit" class="btn btn-primary">Add</button>
+                    </div>
+                </form>
+                
+                <ul class="list-group" id="subtaskList">
+                    {% for subtask in task.subtasks %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center" data-subtask-id="{{ subtask.id }}">
+                            <div>
+                                <input type="checkbox" class="subtask-checkbox me-2" 
+                                       data-subtask-id="{{ subtask.id }}"
+                                       {% if subtask.is_completed %}checked{% endif %}>
+                                <span class="{% if subtask.is_completed %}text-decoration-line-through{% endif %}">
+                                    {{ subtask.title }}
+                                </span>
+                            </div>
+                        </li>
+                    {% else %}
+                        <li class="list-group-item text-muted text-center">No subtasks yet</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Actions</h5>
+            </div>
+            <div class="card-body">
+                <form action="{{ url_for('features.update_task_status', task_id=task.id) }}" method="POST" id="statusForm">
+                    <div class="mb-3">
+                        <label class="form-label">Change Status</label>
+                        <select name="status" class="form-select" onchange="this.form.submit()">
+                            <option value="pending" {% if task.status == 'pending' %}selected{% endif %}>Pending</option>
+                            <option value="in_progress" {% if task.status == 'in_progress' %}selected{% endif %}>In Progress</option>
+                            <option value="completed" {% if task.status == 'completed' %}selected{% endif %}>Completed</option>
+                            <option value="cancelled" {% if task.status == 'cancelled' %}selected{% endif %}>Cancelled</option>
+                        </select>
+                    </div>
+                </form>
+                
+                <hr>
+                
+                <form action="{{ url_for('features.delete_task', task_id=task.id) }}" method="POST">
+                    <button type="submit" class="btn btn-danger w-100" onclick="return confirm('Delete this task?')">
+                        <i class="fas fa-trash"></i> Delete Task
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="mt-3">
+    <a href="{{ url_for('features.tasks') }}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Back to Tasks
+    </a>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById('addSubtaskForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const title = document.getElementById('subtaskTitle').value;
+    if (!title) return;
+    
+    fetch('/features/tasks/{{ task.id }}/add-subtask', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: 'title=' + encodeURIComponent(title)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) location.reload();
+    });
+});
+
+document.querySelectorAll('.subtask-checkbox').forEach(checkbox => {
+    checkbox.addEventListener('change', function() {
+        fetch('/features/subtasks/' + this.dataset.subtaskId + '/toggle', {
+            method: 'POST'
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) location.reload();
+        });
+    });
+});
+</script>
+{% endblock %}
