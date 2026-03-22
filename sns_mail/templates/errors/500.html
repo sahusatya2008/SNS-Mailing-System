@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block title %}Server Error{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="error-page">
+        <div class="error-content">
+            <h1>500</h1>
+            <h2>Internal Server Error</h2>
+            <p>Something went wrong on our server. Please try again later.</p>
+            <div class="error-actions">
+                <a href="{{ url_for('auth.login') }}" class="btn btn-primary">Go to Login</a>
+                <a href="javascript:history.back()" class="btn btn-secondary">Go Back</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.error-page {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 60vh;
+    text-align: center;
+}
+
+.error-content h1 {
+    font-size: 6rem;
+    margin: 0;
+    color: #dc3545;
+    font-weight: 700;
+}
+
+.error-content h2 {
+    font-size: 2rem;
+    margin: 1rem 0;
+    color: #333;
+}
+
+.error-content p {
+    font-size: 1.1rem;
+    color: #666;
+    margin-bottom: 2rem;
+}
+
+.error-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.error-actions .btn {
+    padding: 0.75rem 2rem;
+    font-size: 1rem;
+    border-radius: 4px;
+    text-decoration: none;
+    color: white;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.error-actions .btn-primary {
+    background-color: #007bff;
+}
+
+.error-actions .btn-primary:hover {
+    background-color: #0056b3;
+}
+
+.error-actions .btn-secondary {
+    background-color: #6c757d;
+}
+
+.error-actions .btn-secondary:hover {
+    background-color: #545b62;
+}
+</style>
+{% endblock %}
