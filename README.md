@@ -2,7 +2,7 @@
 
 ## Overview
 
-SNS Mail is a highly secure, SNS AI based web-based email platform built with Python and Flask. It features advanced security measures including biometric authentication, QR code scanning, virus detection, and comprehensive user management. This is developed by Satya Narayan Sahu [CEO, Founder - SNSX, SAACH INDIA] and Tathoi Mondal [COO & Designer, Co-Founder - SNSX, SAACH INDIA]
+SNS Mail is a highly secure, SNS AI based web-based email platform built with Python and Flask. It features advanced security measures including biometric authentication, QR code scanning, virus detection, and comprehensive user management. This is developed by **Satya Narayan Sahu [CEO, Founder - SNSX, SAACH INDIA] and Tathoi Mondal [COO & Designer, Co-Founder - SNSX, SAACH INDIA]**
 
 ## Features
 
@@ -448,20 +448,17 @@ We welcome contributions! Please follow these steps:
 - Update documentation
 - Ensure backward compatibility
 
-## License
-
-This project is licensed under the MIT License. See the LICENSE file for details.
-
 ## Support
 
 For support and questions:
 - **Documentation**: This README and inline code comments
 - **Issues**: GitHub issue tracker
-- **Email**: support@snsx.com (fictional)
+- **Email**: rolexsns@outlook.com
+- - **Developer**: Satya Narayan Sahu and Tathoi Mondal
 
 ## Changelog
 
-### Version 1.0.0
+### Version 1.1.0
 - Initial release
 - Complete email system
 - Biometric authentication
