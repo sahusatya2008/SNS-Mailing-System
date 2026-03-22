@@ -429,7 +429,7 @@ gunicorn -w 4 -b 0.0.0.0:8000 app:app
 
 - **Documentation**: Check this README for common issues
 - **Issues**: Report bugs on the project repository
-- **Community**: Join the discussion forums
+- **Community**: Join the discussion forums - SNSX Channel - Instagram **(@thesatyaaaaa)**
 
 ## Contributing
 
@@ -454,7 +454,7 @@ For support and questions:
 - **Documentation**: This README and inline code comments
 - **Issues**: GitHub issue tracker
 - **Email**: rolexsns@outlook.com
-- - **Developer**: Satya Narayan Sahu and Tathoi Mondal
+- **Developer**: Satya Narayan Sahu and Tathoi Mondal
 
 ## Changelog
 
