@@ -86,7 +86,7 @@ SNS Mail is a highly secure, SNS AI based web-based email platform built with Py
 
 1. **Clone the repository:**
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/sahusatya2008/SNS-Mailing-System.git
    cd sns-mail
    ```
 
